@@ -146,7 +146,7 @@ Import `t` from Elysia to define a schema that validates values at runtime and p
 
 Let's change the path parameter from a string to a number:
 
-<RunBunPlayground>
+<RunBunPlayground path="/user/123">
 
 ```ts
 import { Elysia, t } from 'elysia'
@@ -172,7 +172,7 @@ Elysia supports [Standard Schema](https://github.com/standard-schema/standard-sc
 
 The ecosystem includes Zod, Valibot, ArkType, Effect Schema, Yup, Joi integrations, and [other implementations](https://github.com/standard-schema/standard-schema). Check that the library or adapter you use implements the Standard Schema interface.
 
-<RunBunPlayground dependencies={{ elysia: 'rc', zod: '^4', valibot: '^1' }}>
+<RunBunPlayground dependencies={{ elysia: 'rc', zod: '^4', valibot: '^1' }} path="/id/123?name=Lilith">
 
 ```ts
 import { Elysia } from 'elysia'
@@ -201,7 +201,7 @@ Elysia works with standards such as OpenAPI, WinterTC, and Standard Schema so yo
 
 Add the [OpenAPI plugin](/plugins/openapi/) to generate API documentation from your routes and schemas:
 
-<RunBunPlayground dependencies={{ elysia: 'rc', '@elysia/openapi': 'rc' }}>
+<RunBunPlayground dependencies={{ elysia: 'rc', '@elysia/openapi': 'rc' }} path="/user/123">
 
 ```ts
 import { Elysia, t } from 'elysia'
@@ -225,7 +225,7 @@ The plugin provides a documentation page you can share with your team. Use a rel
 
 Elysia also supports generating OpenAPI schemas from TypeScript types with `fromTypes()`:
 
-<RunBunPlayground dependencies={{ elysia: 'rc', '@elysia/openapi': 'rc' }}>
+<RunBunPlayground dependencies={{ elysia: 'rc', '@elysia/openapi': 'rc' }} path="/user/123">
 
 ```ts {6}
 import { Elysia, t } from 'elysia'
