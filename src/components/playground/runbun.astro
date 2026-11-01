@@ -16,24 +16,18 @@ interface Props {
 	path?: string;
 	/** CSS height of the embed. Defaults to the poster's height until it starts, then the mode's. */
 	height?: string;
-	/** When the embed starts. Defaults to a click on the static code. */
+	/** When the embed starts. Unset, the page default (runbun-defaults.astro): a click on the static code. */
 	load?: 'visible' | 'eager' | 'click';
-	/** Expand button mode, or false to hide the button. */
+	/** Expand button mode, or false to hide the button. Unset, the page default (runbun-defaults.astro): `full`. */
 	expand?: Mode | false;
 	features?: string;
-	/** Runbun theme family (by its light variant), kept while `theme` follows the page. */
+	/** Runbun theme family (by its light variant), kept while `theme` follows the page. Unset, the page default (runbun-defaults.astro). */
 	family?: string;
-	/** Stylesheet URLs loaded inside the embed, whitespace-separated. */
+	/** Stylesheet URLs loaded inside the embed, whitespace-separated. Unset, the page default (runbun-defaults.astro). */
 	fonts?: string;
 	title?: string;
 	class?: string;
 }
-
-// Where the embed page and script come from. Default is production; set PUBLIC_RUNBUN_ORIGIN (e.g.
-// http://localhost:4173) to run against a local runbun build.
-const embedOrigin = (import.meta.env.PUBLIC_RUNBUN_ORIGIN ?? 'https://runbun.dev').replace(/\/$/, '');
-const defaultFonts =
-	'https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..600;1,400&display=swap';
 
 const {
 	mode = 'preview',
@@ -42,11 +36,11 @@ const {
 	file,
 	path,
 	height,
-	load = 'click',
-	expand = 'full',
+	load,
+	expand,
 	features,
-	family = 'elysia-light',
-	fonts = defaultFonts,
+	family,
+	fonts,
 	title = 'Elysia playground',
 	class: className
 } = Astro.props;
@@ -91,7 +85,6 @@ const escapeScript = (code: string) =>
 				family={family}
 				fonts={fonts}
 				title={title}
-				src={embedOrigin}
 			>
 				<div slot="poster">
 					<slot />
@@ -143,8 +136,12 @@ const escapeScript = (code: string) =>
 <script is:inline>
 	(() => {
 		if (!document.querySelector('script[data-runbun-embed]')) {
-			// Each embed carries the origin as its `src` (production unless PUBLIC_RUNBUN_ORIGIN sets another).
+			// The page defaults' `src` is the origin (production unless PUBLIC_RUNBUN_ORIGIN sets another; see
+			// runbun-defaults.astro).
 			const origin =
+				document
+					.querySelector('bun-playground-defaults')
+					?.getAttribute('src') ||
 				document.querySelector('bun-playground')?.getAttribute('src') ||
 				'https://runbun.dev';
 			const script = document.createElement('script');
@@ -179,17 +176,18 @@ const escapeScript = (code: string) =>
 			});
 		};
 
+		// Set on the page defaults (runbun-defaults.astro): every embed follows them, live once it runs.
 		const syncTheme = () => {
-			const theme =
+			const defaults = document.querySelector('bun-playground-defaults');
+			if (!defaults) return;
+
+			defaults.setAttribute(
+				'theme',
 				document.documentElement.dataset.theme === 'light'
 					? 'light'
-					: 'dark';
-			const vars = chrome();
-
-			for (const element of document.querySelectorAll('bun-playground')) {
-				element.setAttribute('theme', theme);
-				element.setAttribute('vars', vars);
-			}
+					: 'dark'
+			);
+			defaults.setAttribute('vars', chrome());
 		};
 
 		if (!window.__runbunThemeSync) {
