@@ -14,7 +14,7 @@ interface Props {
 	file?: string;
 	/** Path the preview's first tab opens, e.g. "/user/123". Defaults to "/". */
 	path?: string;
-	/** CSS height of the embed. Defaults to the mode's height. */
+	/** CSS height of the embed. Defaults to the poster's height until it starts, then the mode's. */
 	height?: string;
 	/** When the embed starts. Defaults to a click on the static code. */
 	load?: 'visible' | 'eager' | 'click';
@@ -69,37 +69,76 @@ const escapeScript = (code: string) =>
 		.replace(/<!--/g, '<\\!--');
 ---
 
-<bun-playground
-	class:list={['not-content my-6 block', className]}
-	mode={mode}
-	file={entry}
-	path={path}
-	height={height}
-	load={load}
-	expand={expand === false ? 'false' : expand}
-	features={features}
-	family={family}
-	fonts={fonts}
-	title={title}
-	src={embedOrigin}
+<div
+	class:list={[
+		'runbun-playground spica-surface spica-card not-content my-6 grid min-w-0 gap-2 rounded-3xl border border-border bg-surface p-1.5 font-sans shadow-xs',
+		className
+	]}
+	data-tone="light"
 >
-	<div
-		slot="poster"
-		class="[&_.expressive-code]:m-0! [&_.expressive-code_.frame]:border-0! [&_.expressive-code_.frame]:shadow-none!"
-	>
-		<slot />
+	<div class="min-w-0 text-sm leading-[1.55] text-pretty text-ink-soft">
+		<div class="code-playground__code min-w-0 [--code-surface-wash:var(--color-base)] [&_.expressive-code]:m-0! [&_.expressive-code_.frame]:border-0! [&_.expressive-code_.frame]:p-0! [&_.expressive-code_.frame]:shadow-none!">
+			<bun-playground
+				class="block overflow-hidden rounded-2xl"
+				style="--poster-bg: transparent; --poster-fg: var(--color-ink); --play-bg: var(--color-primary); --play-bg-hover: var(--color-primary-cta-deep); --play-fg: var(--color-on-primary); --play-border: var(--color-primary); --play-radius: 0.75rem; --play-font: var(--font-sans);"
+				mode={mode}
+				file={entry}
+				path={path}
+				height={height ?? 'auto'}
+				load={load}
+				expand={expand === false ? 'false' : expand}
+				features={features}
+				family={family}
+				fonts={fonts}
+				title={title}
+				src={embedOrigin}
+			>
+				<div slot="poster">
+					<slot />
+				</div>
+				{
+					files.map(({ path, code }) => (
+						<script
+							type="text/plain"
+							data-file={path}
+							set:html={escapeScript(code)}
+							is:inline
+						></script>
+					))
+				}
+			</bun-playground>
+		</div>
 	</div>
-	{
-		files.map(({ path, code }) => (
-			<script
-				type="text/plain"
-				data-file={path}
-				set:html={escapeScript(code)}
-				is:inline
-			></script>
-		))
+</div>
+
+<style>
+	/* The playground is a featured surface, drawn on the embed's overlay part: it sits above the poster and the frame
+	   (in its modal too) and lets clicks through, so the look survives the frame loading. The iris wash is its fill (the
+	   poster's own code surface is plain for it), the magic hairline (--gradient-magic-strong) its 1px ring. */
+	bun-playground::part(overlay) {
+		border-radius: var(--radius-2xl);
+		background: var(--surface-wash-iris-glow);
 	}
-</bun-playground>
+
+	@supports (mask-composite: exclude) or (-webkit-mask-composite: xor) {
+		bun-playground::part(overlay)::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			padding: 1px;
+			border-radius: inherit;
+			background: var(--gradient-magic-strong);
+			-webkit-mask:
+				linear-gradient(#000 0 0) content-box,
+				linear-gradient(#000 0 0);
+			-webkit-mask-composite: xor;
+			mask:
+				linear-gradient(#000 0 0) content-box,
+				linear-gradient(#000 0 0);
+			mask-composite: exclude;
+		}
+	}
+</style>
 
 <script is:inline>
 	(() => {
