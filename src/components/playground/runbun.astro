@@ -1,0 +1,119 @@
+---
+import { extractRunBunFiles, type RunBunFile } from './runbun-files';
+
+type Mode = 'code' | 'console' | 'preview' | 'full' | 'result';
+
+interface Props {
+	/** Playground mode. `preview` runs the server beside the code. */
+	mode?: Mode;
+	/** Extra files to add to the playground, keyed by path. */
+	files?: Record<string, string>;
+	/** Dependencies written to the generated package.json. */
+	dependencies?: Record<string, string>;
+	/** File opened first. Defaults to the first code block. */
+	file?: string;
+	/** CSS height of the embed. Defaults to the mode's height. */
+	height?: string;
+	/** When the embed starts. Defaults to a click on the static code. */
+	load?: 'visible' | 'eager' | 'click';
+	/** Expand button mode, or false to hide the button. */
+	expand?: Mode | false;
+	features?: string;
+	title?: string;
+	class?: string;
+}
+
+const {
+	mode = 'preview',
+	files: extraFiles = {},
+	dependencies = { elysia: 'rc' },
+	file,
+	height,
+	load = 'click',
+	expand = 'full',
+	features,
+	title = 'Elysia playground',
+	class: className
+} = Astro.props;
+
+const slotFiles = extractRunBunFiles(await Astro.slots.render('default'));
+const packageJson = {
+	name: 'elysia-playground',
+	dependencies
+};
+const files: RunBunFile[] = [
+	{ path: 'package.json', code: JSON.stringify(packageJson, null, 2) },
+	...slotFiles,
+	...Object.entries(extraFiles).map(([path, code]) => ({ path, code }))
+];
+const entry = file ?? slotFiles[0]?.path ?? 'index.ts';
+
+const escapeScript = (code: string) =>
+	code
+		.replace(/<\/script/gi, '<\\/script')
+		.replace(/<!--/g, '<\\!--');
+---
+
+<bun-playground
+	class:list={['not-content my-6 block', className]}
+	mode={mode}
+	file={entry}
+	height={height}
+	load={load}
+	expand={expand === false ? 'false' : expand}
+	features={features}
+	title={title}
+>
+	<div
+		slot="poster"
+		class="[&_.expressive-code]:m-0! [&_.expressive-code_.frame]:border-0! [&_.expressive-code_.frame]:shadow-none!"
+	>
+		<slot />
+	</div>
+	{
+		files.map(({ path, code }) => (
+			<script
+				type="text/plain"
+				data-file={path}
+				set:html={escapeScript(code)}
+				is:inline
+			></script>
+		))
+	}
+</bun-playground>
+
+<script is:inline>
+	(() => {
+		if (!document.querySelector('script[data-runbun-embed]')) {
+			const script = document.createElement('script');
+			script.type = 'module';
+			script.src = 'https://runbun.dev/embed.js';
+			script.dataset.runbunEmbed = '';
+			document.head.append(script);
+		}
+
+		const syncTheme = () => {
+			const theme =
+				document.documentElement.dataset.theme === 'light'
+					? 'light'
+					: 'dark';
+
+			for (const element of document.querySelectorAll('bun-playground'))
+				element.setAttribute('theme', theme);
+		};
+
+		if (!window.__runbunThemeSync) {
+			window.__runbunThemeSync = true;
+			new MutationObserver(syncTheme).observe(document.documentElement, {
+				attributes: true,
+				attributeFilter: ['data-theme']
+			});
+			document.addEventListener('astro:page-load', syncTheme);
+			document.addEventListener('DOMContentLoaded', syncTheme, {
+				once: true
+			});
+		}
+
+		syncTheme();
+	})();
+</script>
