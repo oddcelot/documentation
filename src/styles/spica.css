@@ -361,6 +361,22 @@
 			rgba(255, 116, 156, 0) 72%
 		),
 		var(--color-base);
+	--surface-wash-iris-glow:
+		radial-gradient(
+			60% 54% at 98% 2%,
+			rgba(207, 180, 232, 0.22) 0%,
+			rgba(207, 180, 232, 0) 68%
+		),
+		radial-gradient(
+			56% 50% at 2% 98%,
+			rgba(222, 194, 236, 0.18) 0%,
+			rgba(222, 194, 236, 0) 70%
+		),
+		radial-gradient(
+			50% 46% at 88% 96%,
+			rgba(255, 116, 156, 0.1) 0%,
+			rgba(255, 116, 156, 0) 72%
+		);
 
 	--surface-wash-dawn:
 		radial-gradient(
@@ -621,6 +637,22 @@
 			transparent 100%
 		),
 		var(--color-base);
+	--surface-wash-iris-glow:
+		radial-gradient(
+			75% 67.5% at 98% 2%,
+			color-mix(in oklab, var(--color-wash-lavender) 28%, transparent),
+			transparent 100%
+		),
+		radial-gradient(
+			70% 62.5% at 2% 98%,
+			color-mix(in oklab, var(--color-wash-lavender) 24%, transparent),
+			transparent 100%
+		),
+		radial-gradient(
+			62.5% 57.5% at 88% 96%,
+			color-mix(in oklab, var(--color-wash-pink) 14%, transparent),
+			transparent 100%
+		);
 
 	--surface-wash-dawn:
 		radial-gradient(
