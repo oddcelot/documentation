@@ -18,6 +18,7 @@ import { productOf } from '../lib/product'
 import Aurora from '../components/aurora.astro'
 import Assistant from '../components/assistant/assistant'
 import { HangingStars } from '../components/hanging-stars'
+import RunBunDefaults from '../components/playground/runbun-defaults.astro'
 
 const { hasSidebar } = Astro.locals.starlightRoute
 // production can't reach Arona without a Turnstile site key
@@ -194,6 +195,8 @@ const contentAnimation = {
 				<div class="relative h-0 max-xl:-top-8 print:hidden">
 					<HangingStars composition="page" />
 				</div>
+				{/* in .main-frame, so client-side navigation swaps it with the content */}
+				<RunBunDefaults />
 				<Fragment set:html={content} />
 			</div>
 			<dialog
@@ -277,6 +280,7 @@ const contentAnimation = {
 		<PageFrame>
 			<>
 				<slot name="header" slot="header" />
+				<RunBunDefaults />
 				<Fragment set:html={content} />
 			</>
 		</PageFrame>
