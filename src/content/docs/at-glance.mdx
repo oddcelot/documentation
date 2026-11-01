@@ -11,6 +11,7 @@ import InteractiveDocLayout from '../../components/interactive-code/layout.astro
 import InteractiveDoc from '../../components/interactive-code/doc.astro';
 import InteractiveStep from '../../components/interactive-code/step.astro';
 import CodePlayground from '../../components/playground/code.astro';
+import RunBunPlayground from '../../components/playground/runbun.astro';
 import FileCodeBlock from '../../components/interactive-code/file-code-block.astro';
 import TabItem from '../../components/interactive-code/tab-item.astro';
 
@@ -145,6 +146,8 @@ Import `t` from Elysia to define a schema that validates values at runtime and p
 
 Let's change the path parameter from a string to a number:
 
+<RunBunPlayground>
+
 ```ts
 import { Elysia, t } from 'elysia'
 
@@ -157,6 +160,8 @@ new Elysia()
     .listen(3000)
 ```
 
+</RunBunPlayground>
+
 The schema comes before the handler in Elysia 2. A request to `/user/123` gives the handler the number `123`; `/user/abc` fails validation. Hover over `id` in your editor to see the inferred `number` type.
 
 The same schema describes the runtime check and the handler's TypeScript input.
@@ -166,6 +171,8 @@ The same schema describes the runtime check and the handler's TypeScript input.
 Elysia supports [Standard Schema](https://github.com/standard-schema/standard-schema), so you can use compatible versions of your preferred validation library.
 
 The ecosystem includes Zod, Valibot, ArkType, Effect Schema, Yup, Joi integrations, and [other implementations](https://github.com/standard-schema/standard-schema). Check that the library or adapter you use implements the Standard Schema interface.
+
+<RunBunPlayground dependencies={{ elysia: 'rc', zod: '^4', valibot: '^1' }}>
 
 ```ts
 import { Elysia } from 'elysia'
@@ -184,6 +191,8 @@ new Elysia()
     .listen(3000)
 ```
 
+</RunBunPlayground>
+
 Here Zod converts the path parameter to a number, while Valibot requires `?name=Lilith`. Elysia infers the validated types from both schemas.
 
 ## OpenAPI
@@ -191,6 +200,8 @@ Here Zod converts the path parameter to a number, while Valibot requires `?name=
 Elysia works with standards such as OpenAPI, WinterTC, and Standard Schema so you can connect it to tools you already use.
 
 Add the [OpenAPI plugin](/plugins/openapi/) to generate API documentation from your routes and schemas:
+
+<RunBunPlayground dependencies={{ elysia: 'rc', '@elysia/openapi': 'rc' }}>
 
 ```ts
 import { Elysia, t } from 'elysia'
@@ -206,11 +217,15 @@ new Elysia()
     .listen(3000)
 ```
 
+</RunBunPlayground>
+
 The plugin provides a documentation page you can share with your team. Use a release compatible with Elysia 2; see the plugin reference for installation and configuration.
 
 ## OpenAPI Type Gen
 
 Elysia also supports generating OpenAPI schemas from TypeScript types with `fromTypes()`:
+
+<RunBunPlayground dependencies={{ elysia: 'rc', '@elysia/openapi': 'rc' }}>
 
 ```ts {6}
 import { Elysia, t } from 'elysia'
@@ -227,6 +242,8 @@ export const app = new Elysia()
     }, ({ params: { id } }) => id)
     .listen(3000)
 ```
+
+</RunBunPlayground>
 
 This brings a FastAPI-like approach to TypeScript: use your code's types as input to documentation generation instead of duplicating them in manual annotations. See [OpenAPI from types](/patterns/openapi/#openapi-from-types) for its setup and supported types.
 
