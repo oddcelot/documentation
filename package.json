@@ -11,12 +11,14 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/markdown-remark": "7.2.4",
     "@astrojs/react": "^6.0.5",
     "@astrojs/starlight": "^0.41.9",
     "@base-ui/react": "^1.8.0",
     "@neoconfetti/react": "^1.0.0",
     "@number-flow/react": "^0.6.2",
     "@rollup/browser": "^4.63.1",
+    "@runbun/astro": "link:../../projects/bun-webcontainer/packages/astro",
     "@shikijs/monaco": "4.4.3",
     "@tabler/icons-react": "^3.46.0",
     "@types/react": "^19.2.18",

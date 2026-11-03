@@ -183,3 +183,62 @@ html[data-theme='dark'] {
 .spica-card[data-tone='night'] {
 	color-scheme: dark;
 }
+
+/* Runbun playgrounds (```ts playground fences, @runbun/astro) are a featured card: the 6px surface and its hairline are
+   rings outside the embed (margins make room), so the embed keeps no padding of its own. The poster's code takes the
+   Expressive Code blocks' type on the plain base; the iris wash over it is the overlay's. */
+bun-playground {
+	--poster-bg: transparent;
+	--poster-fg: var(--color-ink);
+	--play-bg: var(--color-primary);
+	--play-bg-hover: var(--color-primary-cta-deep);
+	--play-fg: var(--color-on-primary);
+	--play-border: var(--color-primary);
+	--play-radius: 0.75rem;
+	--play-font: var(--font-sans);
+	--runbun-code-font: var(--font-mono);
+	--runbun-code-size: 0.84375rem;
+	--runbun-code-line-height: 1.65;
+	--runbun-code-radius: var(--radius-2xl);
+	--runbun-code-border: var(--color-border);
+	--hls-background: var(--color-base);
+	display: block;
+	margin: calc(1.5rem + 7px) 7px;
+	border-radius: var(--radius-2xl);
+	overflow: hidden;
+	box-shadow:
+		0 0 0 6px var(--color-surface),
+		0 0 0 7px var(--color-border),
+		var(--shadow-xs);
+}
+
+bun-playground .runbun-code pre {
+	padding: 0.6875rem 0.8125rem;
+}
+
+/* Drawn on the embed's overlay part: it sits above the poster and the frame (in its modal too) and lets clicks
+   through, so the look survives the frame loading. The iris wash is its fill, the magic hairline
+   (--gradient-magic-strong) its 1px ring. */
+bun-playground::part(overlay) {
+	border-radius: var(--radius-2xl);
+	background: var(--surface-wash-iris-glow);
+}
+
+@supports (mask-composite: exclude) or (-webkit-mask-composite: xor) {
+	bun-playground::part(overlay)::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		padding: 1px;
+		border-radius: inherit;
+		background: var(--gradient-magic-strong);
+		-webkit-mask:
+			linear-gradient(#000 0 0) content-box,
+			linear-gradient(#000 0 0);
+		-webkit-mask-composite: xor;
+		mask:
+			linear-gradient(#000 0 0) content-box,
+			linear-gradient(#000 0 0);
+		mask-composite: exclude;
+	}
+}

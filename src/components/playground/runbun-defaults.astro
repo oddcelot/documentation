@@ -1,9 +1,10 @@
 ---
-// Page-wide defaults for every <bun-playground> (runbun.astro), rendered once per page by the docs layout. An example
-// still overrides any of these with its own prop.
+// Page-wide defaults for every <bun-playground> (the ```ts playground fences of @runbun/astro), rendered once per page
+// by the docs layout. A fence still overrides any of these with its own meta.
 
 // Where the embed page and script come from. Default is production; set PUBLIC_RUNBUN_ORIGIN (e.g.
-// http://localhost:4173) to run against a local runbun build.
+// http://localhost:4173) to run against a local runbun build. astro.config.mjs reads the same variable for the fences'
+// embed.js.
 const embedOrigin = (import.meta.env.PUBLIC_RUNBUN_ORIGIN ?? 'https://runbun.dev').replace(/\/$/, '');
 ---
 
@@ -15,3 +16,60 @@ const embedOrigin = (import.meta.env.PUBLIC_RUNBUN_ORIGIN ?? 'https://runbun.dev
 	fonts="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..600;1,400&display=swap"
 	src={embedOrigin}
 ></bun-playground-defaults>
+
+<script is:inline>
+	(() => {
+		// The embed is cross-origin, so it can't see the page's CSS. Read the tokens it should mirror and hand them
+		// over as CSS variables; runbun merges them over its theme's (see its embed API's `vars`).
+		const chrome = () => {
+			const style = getComputedStyle(document.documentElement);
+			const token = (name) => style.getPropertyValue(name).trim();
+
+			return JSON.stringify({
+				base: {
+					'--bg': token('--color-base'),
+					'--canvas': token('--color-surface'),
+					'--panel': token('--color-surface'),
+					'--fg': token('--color-ink'),
+					'--muted': token('--color-ink-muted'),
+					'--border': token('--color-border'),
+					'--accent': token('--color-primary'),
+					'--error': token('--color-danger-deep'),
+					'--ok': token('--color-success-deep'),
+					'--warn': token('--color-warning-deep'),
+					'--radius': '1rem',
+					'--font-ui': token('--font-sans'),
+					'--font-mono': token('--font-mono')
+				}
+			});
+		};
+
+		// Set on the page defaults above: every embed follows them, live once it runs.
+		const syncTheme = () => {
+			const defaults = document.querySelector('bun-playground-defaults');
+			if (!defaults) return;
+
+			defaults.setAttribute(
+				'theme',
+				document.documentElement.dataset.theme === 'light'
+					? 'light'
+					: 'dark'
+			);
+			defaults.setAttribute('vars', chrome());
+		};
+
+		if (!window.__runbunThemeSync) {
+			window.__runbunThemeSync = true;
+			new MutationObserver(syncTheme).observe(document.documentElement, {
+				attributes: true,
+				attributeFilter: ['data-theme']
+			});
+			document.addEventListener('astro:page-load', syncTheme);
+			document.addEventListener('DOMContentLoaded', syncTheme, {
+				once: true
+			});
+		}
+
+		syncTheme();
+	})();
+</script>
