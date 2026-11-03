@@ -190,12 +190,12 @@ html[data-theme='dark'] {
 bun-playground {
 	--poster-bg: transparent;
 	--poster-fg: var(--color-ink);
-	--play-bg: var(--color-primary);
-	--play-bg-hover: var(--color-primary-cta-deep);
-	--play-fg: var(--color-on-primary);
-	--play-border: var(--color-primary);
+	--play-bg: var(--color-surface);
+	--play-bg-hover: var(--color-surface);
+	--play-fg: var(--color-ink-soft);
+	--play-border: var(--color-border-strong);
 	--play-radius: 0.75rem;
-	--play-font: var(--font-sans);
+	--play-font: 600 0.875rem / 1.25rem var(--font-sans);
 	--runbun-code-font: var(--font-mono);
 	--runbun-code-size: 0.84375rem;
 	--runbun-code-line-height: 1.65;
@@ -214,6 +214,164 @@ bun-playground {
 
 bun-playground .runbun-code pre {
 	padding: 0.6875rem 0.8125rem;
+}
+
+/* Run is quiet, as the page actions are, until hovered: then a beam of light circles its border (after
+   libraries.dev/beam), a comet in the docs' gradient colors (--gradient-magic-strong, the iris wash): sky blue at the
+   tail, then periwinkle and violet, pink and hot at the head. A soft glow follows it just inside. --beam-angle is
+   where the head is; it is registered so it can animate, and it only turns while hovered. */
+@property --beam-angle {
+	syntax: '<angle>';
+	inherits: false;
+	initial-value: 0deg;
+}
+
+@keyframes run-beam {
+	to {
+		--beam-angle: 360deg;
+	}
+}
+
+bun-playground {
+	--beam-sky: var(--color-harmony-left);
+	--beam-periwinkle: var(--color-harmony-center);
+	--beam-violet: var(--color-harmony-right);
+	--beam-pink: var(--color-primary);
+	--beam-core: rgb(255 255 255 / 0.95);
+}
+
+/* Pastels vanish on white: light mode takes the deeper tones. */
+:root[data-theme='light'] bun-playground {
+	--beam-sky: var(--color-harmony-left-deep);
+	--beam-periwinkle: var(--color-harmony-center-deep);
+	--beam-violet: var(--color-harmony-right-deep);
+	--beam-core: var(--color-bloom);
+}
+
+bun-playground::part(play) {
+	isolation: isolate;
+	transition:
+		color var(--dur-base) var(--ease-out),
+		border-color var(--dur-base) var(--ease-out);
+}
+
+bun-playground::part(play)::before,
+bun-playground::part(play)::after {
+	content: '';
+	position: absolute;
+	pointer-events: none;
+	border-radius: inherit;
+	opacity: 0;
+	transition: opacity var(--dur-slow) var(--ease-out);
+	animation: run-beam 2s linear infinite paused;
+}
+
+/* The comet, on the border: the gradient fills the box and a mask keeps only the 1px ring, so it follows the
+   rounded shape. */
+bun-playground::part(play)::after {
+	inset: -1px;
+	padding: 1px;
+	background: conic-gradient(
+		from var(--beam-angle),
+		transparent 0%,
+		transparent 52%,
+		var(--beam-sky) 66%,
+		var(--beam-periwinkle) 76%,
+		var(--beam-violet) 84%,
+		var(--beam-pink) 92%,
+		var(--beam-core) 95%,
+		transparent 97%
+	);
+	-webkit-mask:
+		linear-gradient(#000 0 0) content-box,
+		linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	mask:
+		linear-gradient(#000 0 0) content-box,
+		linear-gradient(#000 0 0);
+	mask-composite: exclude;
+}
+
+/* The glow: the same colors, faded in from the edges only, so it hugs the inside of the border under the head. */
+bun-playground::part(play)::before {
+	inset: 0;
+	z-index: -1;
+	background: conic-gradient(
+		from var(--beam-angle),
+		transparent 0%,
+		transparent 60%,
+		color-mix(in oklab, var(--beam-sky) 35%, transparent) 72%,
+		color-mix(in oklab, var(--beam-violet) 45%, transparent) 84%,
+		color-mix(in oklab, var(--beam-pink) 50%, transparent) 92%,
+		transparent 100%
+	);
+	filter: blur(2px);
+	-webkit-mask:
+		linear-gradient(to right, #000, transparent 16px, transparent calc(100% - 16px), #000),
+		linear-gradient(to bottom, #000, transparent 32%),
+		linear-gradient(to top, #000, transparent 32%);
+	mask:
+		linear-gradient(to right, #000, transparent 16px, transparent calc(100% - 16px), #000),
+		linear-gradient(to bottom, #000, transparent 32%),
+		linear-gradient(to top, #000, transparent 32%);
+}
+
+bun-playground::part(play):hover {
+	color: var(--color-ink);
+}
+
+bun-playground::part(play):hover::before,
+bun-playground::part(play):hover::after {
+	opacity: 1;
+	animation-play-state: running;
+}
+
+bun-playground::part(play):focus-visible {
+	outline-color: var(--color-primary);
+}
+
+/* Run to playground: the static poster blurs and swells away while the live playground sharpens into its place, and
+   the card eases to its new height. The embed keeps the poster up until this has played (its `live` state). */
+bun-playground::part(poster),
+bun-playground::part(frame) {
+	transition:
+		opacity var(--dur-slow) var(--ease-out),
+		filter var(--dur-slow) var(--ease-out),
+		scale var(--dur-slow) var(--ease-out);
+}
+
+bun-playground:state(live)::part(poster) {
+	opacity: 0;
+	filter: blur(10px);
+	scale: 1.03;
+}
+
+bun-playground:not(:state(live))::part(frame) {
+	opacity: 0;
+	filter: blur(10px);
+	scale: 0.97;
+}
+
+bun-playground::part(box) {
+	transition: height var(--dur-slow) var(--ease-out);
+}
+
+bun-playground::part(spinner) {
+	border-color: color-mix(in oklab, var(--color-primary) 25%, transparent);
+	border-top-color: var(--color-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	/* The beam still lights up, but stays put; the swap is a cut. */
+	bun-playground::part(play),
+	bun-playground::part(play)::before,
+	bun-playground::part(play)::after,
+	bun-playground::part(poster),
+	bun-playground::part(frame),
+	bun-playground::part(box) {
+		transition: none;
+		animation: none;
+	}
 }
 
 /* Drawn on the embed's overlay part: it sits above the poster and the frame (in its modal too) and lets clicks
