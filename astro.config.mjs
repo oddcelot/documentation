@@ -4,6 +4,10 @@ import starlight from '@astrojs/starlight'
 import react from '@astrojs/react'
 import tailwindcss from '@tailwindcss/vite'
 import starlightTypeDoc, { typeDocSidebarGroup } from 'starlight-typedoc'
+import { unified } from '@astrojs/markdown-remark'
+import runbun from '@runbun/astro'
+import remarkRunbun from '@runbun/astro/remark'
+import { loadEnv } from 'vite'
 
 import { createInlineSvgUrl } from 'expressive-code'
 import { fileURLToPath } from 'node:url'
@@ -13,6 +17,10 @@ import { spicaTables } from './src/lib/spica-tables.mjs'
 import { lazyBlogImages } from './src/lib/lazy-blog-images.mjs'
 import { locales } from './src/lib/locales.mjs'
 import { spicaDark, spicaLight } from './src/spica/code-themes.mjs'
+
+// The same origin runbun-defaults.astro reads (import.meta.env), with the trailing slash runbun() expects.
+const { PUBLIC_RUNBUN_ORIGIN } = loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), 'PUBLIC_')
+const playgroundUrl = `${(PUBLIC_RUNBUN_ORIGIN || 'https://runbun.dev').replace(/\/+$/, '')}/`
 
 // monaco-editor-auto-typings (tutorial playground) is CommonJS and requires Node's `path` in the
 // browser. Resolve bare `path` to a posix join/dirname shim for client code only; a global alias
@@ -53,8 +61,18 @@ export default defineConfig({
 	site: siteUrl,
 	redirects: { '/eden/overview': '/eden/' },
 	image: { responsiveStyles: true },
-	markdown: { rehypePlugins: [spicaTables, lazyBlogImages] },
+	markdown: {
+		processor: unified({
+			remarkPlugins: [remarkRunbun],
+			rehypePlugins: [spicaTables, lazyBlogImages]
+		})
+	},
 	integrations: [
+		runbun({
+			playgroundUrl,
+			themes: [spicaLight, spicaDark],
+			themeSelector: ({ appearance }) => `:root[data-theme='${appearance}']`
+		}),
 		starlight({
 			title: 'Elysia Interactive',
 			locales,
