@@ -51,7 +51,13 @@ export function docToMarkdown(html: string) {
 			handlers: {
 				pre(state, node) {
 					const lines = selectAll('.ec-line > .code', node)
-					if (!lines.length) return defaultHandlers.pre(state, node)
+					if (!lines.length) {
+						// Runbun blocks (@runbun/astro) name their language on the pre, as Expressive Code does.
+						const code = defaultHandlers.pre(state, node)
+						if (node.properties.dataLanguage && !code.lang)
+							code.lang = String(node.properties.dataLanguage)
+						return code
+					}
 					// Lines are elements; blank lines contain a newline placeholder.
 					return {
 						type: 'code',
