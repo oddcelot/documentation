@@ -1,11 +1,6 @@
 ---
 // Page-wide defaults for every <bun-playground> (the ```ts playground fences of @runbun/astro), rendered once per page
 // by the docs layout. A fence still overrides any of these with its own meta.
-
-// Where the embed page and script come from. Default is production; set PUBLIC_RUNBUN_ORIGIN (e.g.
-// http://localhost:4173) to run against a local runbun build. astro.config.mjs reads the same variable for the fences'
-// embed.js.
-const embedOrigin = (import.meta.env.PUBLIC_RUNBUN_ORIGIN ?? 'https://runbun.dev').replace(/\/$/, '');
 ---
 
 <bun-playground-defaults
@@ -16,7 +11,7 @@ const embedOrigin = (import.meta.env.PUBLIC_RUNBUN_ORIGIN ?? 'https://runbun.dev
 	layout="stack"
 	family="elysia-light"
 	fonts="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..600;1,400&display=swap"
-	src={embedOrigin}
+	src="https://runbun.dev"
 ></bun-playground-defaults>
 
 <script is:inline>

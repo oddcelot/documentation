@@ -18,7 +18,7 @@
     "@neoconfetti/react": "^1.0.0",
     "@number-flow/react": "^0.6.2",
     "@rollup/browser": "^4.63.1",
-    "@runbun/astro": "link:../../projects/bun-webcontainer/packages/astro",
+    "@runbun/astro": "^0.2.0",
     "@shikijs/monaco": "4.4.3",
     "@tabler/icons-react": "^3.46.0",
     "@types/react": "^19.2.18",
