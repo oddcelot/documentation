@@ -64,6 +64,7 @@ export default defineConfig({
 	},
 	integrations: [
 		runbun({
+			fences: "all",
 			themes: [spicaLight, spicaDark],
 			themeSelector: ({ appearance }) => `:root[data-theme='${appearance}']`
 		}),

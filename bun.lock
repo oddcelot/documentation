@@ -12,7 +12,7 @@
         "@neoconfetti/react": "^1.0.0",
         "@number-flow/react": "^0.6.2",
         "@rollup/browser": "^4.63.1",
-        "@runbun/astro": "^0.2.0",
+        "@runbun/astro": "link:../../projects/bun-webcontainer/packages/astro",
         "@shikijs/monaco": "4.4.3",
         "@tabler/icons-react": "^3.46.0",
         "@types/react": "^19.2.18",
@@ -368,8 +368,6 @@
 
     "@pagefind/windows-x64": ["@pagefind/windows-x64@1.5.2", "", { "os": "win32", "cpu": "x64" }, "sha512-Fa2Iyw7kaDRzGMfNYNUXNW2zbL5FQVDgSOcbDHdzBrDEdpqOqg8TcZ68F22ol6NJ9IGzvUdmeyZypLW5dyhqsg=="],
 
-    "@pierre/highlights": ["@pierre/highlights@0.3.0", "", {}, "sha512-s6xZ/giPPrSeCO2w254GiysUXD4ditKMTOrl1vHynvPqP7VdlujYi01O9joxJ0T16XkoXGQMN6zkRi9+O8NCzg=="],
-
     "@rolldown/binding-android-arm-eabi": ["@rolldown/binding-android-arm-eabi@1.2.6", "", { "os": "android", "cpu": "arm" }, "sha512-b+jTcARdTiFLI6jB4a5XjTm0RWd6KcRfQj/I2356fxUZemiho9zQLxo0RtCuMDAyKcLo6cEltkgbQp6d1+sjjQ=="],
 
     "@rolldown/binding-android-arm64": ["@rolldown/binding-android-arm64@1.2.6", "", { "os": "android", "cpu": "arm64" }, "sha512-lkWU8ZJaRk9q3CIEY1Tc7vIFALp3Xw5NfGJo2hQg5oIqNgxWi1zI+IiDEK3r70BF5Dzol1tcXsnzsRc8NLhG+Q=="],
@@ -404,7 +402,7 @@
 
     "@rollup/browser": ["@rollup/browser@4.63.1", "", { "dependencies": { "@types/estree": "1.0.9" } }, "sha512-qsJijWUL79BPPzuVazW3E/tVQAkSMmjHVk/NQfRbr3BmviFqwxPb7twF0RfneJqebBikfAL2RxXGvzC6O1JEqg=="],
 
-    "@runbun/astro": ["@runbun/astro@0.2.0", "", { "dependencies": { "@pierre/highlights": "0.3.0" }, "peerDependencies": { "astro": "^7.0.0" } }, "sha512-yb3kjIqMO4PswKX/wXGKy0atGNZi26NnxKjDgNnErxBLTemoZ4A2ftomn0y5vtNarY9fh5fmuea0GvMUvhIuiA=="],
+    "@runbun/astro": ["@runbun/astro@link:../../projects/bun-webcontainer/packages/astro", {}],
 
     "@shikijs/core": ["@shikijs/core@4.4.3", "", { "dependencies": { "@shikijs/primitive": "4.4.3", "@shikijs/types": "4.4.3", "@shikijs/vscode-textmate": "^10.0.2", "@types/hast": "^3.0.5", "hast-util-to-html": "^9.0.5" } }, "sha512-QCR4q2ZO/ILJEuwiBMel4wdcTDb1JGwfjKTxPDF6x8ixOaluPrVqIn06C99AcRPhmYlBR56d/Fb+GN58GzExpg=="],
 
