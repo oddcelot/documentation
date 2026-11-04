@@ -136,7 +136,12 @@
 	padding: 0;
 	border: 0;
 	border-radius: 0.75rem;
-	background: transparent;
+	/* Code runs under it, so it sits on its own surface: the raised one, a touch see-through and blurred, with a
+	   hairline ring (a shadow, so the 30px box doesn't grow). */
+	background: color-mix(in oklab, var(--color-surface-raised) 88%, transparent);
+	-webkit-backdrop-filter: blur(6px);
+	backdrop-filter: blur(6px);
+	box-shadow: 0 0 0 1px var(--color-border);
 	color: var(--color-ink-soft);
 	cursor: pointer;
 	opacity: 0;
@@ -511,6 +516,10 @@ bun-playground {
 	--runbun-code-line-height: 1.65;
 	--runbun-code-radius: var(--radius-2xl);
 	--runbun-code-border: var(--color-border);
+	/* The request panel (requests= with written responses) wears the live embed's tabs as the docs theme them
+	   (runbun-defaults.astro): Nunito, and the brand pink under the open tab and around focus. */
+	--runbun-ui-font: var(--font-sans);
+	--runbun-accent: var(--color-primary);
 	--hls-background: var(--color-base);
 	/* The beam's colors are the docs' gradients' (--gradient-magic-strong, the iris wash). */
 	--beam-sky: var(--color-harmony-left);
@@ -537,6 +546,31 @@ bun-playground {
 
 	& .runbun-code pre {
 		padding: 0.6875rem 0.8125rem;
+	}
+
+	/* The request tabs' paths read as the live tabs show them, in the label's type, not the code's. */
+	& .runbun-requests-tablist {
+		font-size: 0.8125rem;
+		font-weight: 500;
+	}
+
+	& .runbun-requests .runbun-path {
+		font-family: inherit;
+	}
+
+	/* "Request body" and "Response" are the docs' small caption; the panel's text lines up with the poster's code. */
+	& .runbun-requests .runbun-request-label,
+	& .runbun-requests .runbun-response-pending {
+		padding: 0.5rem 0.8125rem 0;
+		color: var(--color-ink-muted);
+		font-family: var(--font-sans);
+		font-size: 0.75rem;
+		font-weight: 600;
+		opacity: 1;
+	}
+
+	& .runbun-requests pre {
+		padding: 0.375rem 0.8125rem 0.6875rem;
 	}
 
 	/* Run is quiet, as the page actions are, until hovered: then a beam of light circles its border (after
