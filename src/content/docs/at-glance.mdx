@@ -11,8 +11,6 @@ import InteractiveDocLayout from '../../components/interactive-code/layout.astro
 import InteractiveDoc from '../../components/interactive-code/doc.astro';
 import InteractiveStep from '../../components/interactive-code/step.astro';
 import CodePlayground from '../../components/playground/code.astro';
-import FileCodeBlock from '../../components/interactive-code/file-code-block.astro';
-import TabItem from '../../components/interactive-code/tab-item.astro';
 
 export const helloDemo = new Elysia()
     .get('/', 'Hello Elysia')
@@ -236,10 +234,7 @@ Type safety doesn't stop at the server. Elysia's client library, **Eden**, lets 
 
 Export the type of your server from `server.ts`, then import it in `client.ts`:
 
-<FileCodeBlock>
-<TabItem label="server.ts">
-
-```ts
+```ts title="server.ts" group=e2e
 import { Elysia, t } from 'elysia'
 import { openapi, fromTypes } from '@elysia/openapi'
 
@@ -257,10 +252,7 @@ export const app = new Elysia()
 export type App = typeof app
 ```
 
-</TabItem>
-<TabItem label="client.ts">
-
-```ts
+```ts title="client.ts" group=e2e
 import { treaty } from '@elysia/eden'
 import type { App } from './server'
 
@@ -272,9 +264,6 @@ const { data } = await app.user({ id: 617 }).get()
 console.log(data)
 ```
 
-</TabItem>
-</FileCodeBlock>
-
 Eden uses the existing Elysia types without a separate client code-generation step. The client imports only the server's type, keeping server implementation code out of its bundle.
 
 Elysia is here to help you build a confident backend, and everything you connect to it.
@@ -283,13 +272,13 @@ Elysia is here to help you build a confident backend, and everything you connect
 
 Successful responses are only part of an API. Elysia can infer **all possible response types**, including errors, so your client can handle them safely.
 
-```ts title="server.ts"
+```ts title="server.ts" {5-9}
 import { Elysia, t } from 'elysia'
 
 const plugin = new Elysia()
-    .macro({
+    .macro({ // (1)
         auth: {
-            cookie: t.Cookie({
+            cookie: t.Cookie({ // (2)
                 session: t.String()
             }),
             beforeHandle({ cookie: { session }, status }) {
@@ -316,6 +305,9 @@ const app = new Elysia()
 
 export type App = typeof app
 ```
+
+1. `macro` adds a reusable option, here `auth`, to every route that uses the plugin.
+2. The cookie schema validates `session` before the handler runs.
 
 Here, Elysia can return a `number` for a successful request but also infer `401` or `420` error in type-level so client can handle all three cases with type safety.
 
