@@ -1,0 +1,620 @@
+---
+title: Code blocks
+description: Every code-block mode a docs author can use, with its source and result.
+head:
+  - tag: meta
+    attrs:
+      name: robots
+      content: noindex
+---
+
+import { Elysia } from 'elysia';
+import CodePlayground from '../../components/playground/code.astro';
+import FileCodeBlock from '../../components/interactive-code/file-code-block.astro';
+import TabItem from '../../components/interactive-code/tab-item.astro';
+
+export const userDemo = new Elysia()
+    .get('/', 'Hello Elysia')
+    .get('/user/:id', ({ params: { id } }) => id);
+
+This page is internal, for docs authors. It lists every code-block mode the docs support, each as its Markdown source followed by the rendered result. It isn't in the sidebar, search, or the exported Markdown.
+
+Every fence goes through `@runbun/astro` (`fences: "all"`). A fence it can't show as written falls back to Expressive Code.
+
+## Static blocks
+
+Highlighted at build time by runbun. They don't run, and every one has a Copy button.
+
+### Plain fence
+
+The default for any code sample. Renderer: runbun static. Runnable: no. Copy: yes.
+
+````md
+```ts
+import { Elysia } from 'elysia'
+
+new Elysia()
+    .get('/', 'Hello Elysia')
+    .listen(3000)
+```
+````
+
+```ts
+import { Elysia } from 'elysia'
+
+new Elysia()
+    .get('/', 'Hello Elysia')
+    .listen(3000)
+```
+
+### Title
+
+Name the file a block shows. Renderer: runbun static. Runnable: no. Copy: yes.
+
+````md
+```ts title="server.ts"
+import { Elysia } from 'elysia'
+
+new Elysia()
+    .get('/', 'Hello Elysia')
+    .listen(3000)
+```
+````
+
+```ts title="server.ts"
+import { Elysia } from 'elysia'
+
+new Elysia()
+    .get('/', 'Hello Elysia')
+    .listen(3000)
+```
+
+### File-name comment
+
+The same title, taken from a comment in the first four lines. The comment line and an empty line after it are removed. Renderer: runbun static. Runnable: no. Copy: yes.
+
+````md
+```ts
+// server.ts
+import { Elysia } from 'elysia'
+
+new Elysia()
+    .get('/', 'Hello Elysia')
+    .listen(3000)
+```
+````
+
+```ts
+// server.ts
+import { Elysia } from 'elysia'
+
+new Elysia()
+    .get('/', 'Hello Elysia')
+    .listen(3000)
+```
+
+### No language
+
+Plain text with no highlighting, for output or prose-like content. Renderer: runbun static. Runnable: no. Copy: yes.
+
+````md
+```
+GET /user/123
+→ 200 OK
+→ 123
+```
+````
+
+```
+GET /user/123
+→ 200 OK
+→ 123
+```
+
+### Line marks
+
+Highlight lines to draw the eye. `{2,4-5}` is the same as `mark={2,4-5}`. Ranges only, with no spaces. Renderer: runbun static. Runnable: no. Copy: yes.
+
+````md
+```ts {2,4-5}
+import { Elysia } from 'elysia'
+import { openapi } from '@elysia/openapi'
+
+new Elysia()
+    .use(openapi())
+    .get('/', 'Hello Elysia')
+    .listen(3000)
+```
+````
+
+```ts {2,4-5}
+import { Elysia } from 'elysia'
+import { openapi } from '@elysia/openapi'
+
+new Elysia()
+    .use(openapi())
+    .get('/', 'Hello Elysia')
+    .listen(3000)
+```
+
+### Inserted and deleted lines
+
+Show a change: `ins={…}` marks lines as added, `del={…}` as removed. `mark={…}` works the same way and can be combined with them. Copy keeps the removed lines. Renderer: runbun static. Runnable: no. Copy: yes.
+
+````md
+```ts ins={4} del={5}
+import { Elysia, t } from 'elysia'
+
+new Elysia()
+    .get('/user/:id', { params: t.Object({ id: t.Number() }) }, ({ params: { id } }) => id)
+    .get('/user/:id', ({ params: { id } }) => id)
+    .listen(3000)
+```
+````
+
+```ts ins={4} del={5}
+import { Elysia, t } from 'elysia'
+
+new Elysia()
+    .get('/user/:id', { params: t.Object({ id: t.Number() }) }, ({ params: { id } }) => id)
+    .get('/user/:id', ({ params: { id } }) => id)
+    .listen(3000)
+```
+
+### Numbered notes
+
+Explain specific lines without comments in the code. End a line with a comment that is only `(N)`, then put an ordered list with exactly one item per marker right after the fence, with no other text between. Notes don't work in a group. Renderer: runbun static. Runnable: no. Copy: yes, without the markers.
+
+````md
+```ts
+import { Elysia } from 'elysia'
+
+new Elysia() // (1)
+    .get('/', 'Hello Elysia') // (2)
+    .listen(3000)
+```
+
+1. One instance holds every route.
+2. A handler can be a plain value.
+````
+
+```ts
+import { Elysia } from 'elysia'
+
+new Elysia() // (1)
+    .get('/', 'Hello Elysia') // (2)
+    .listen(3000)
+```
+
+1. One instance holds every route.
+2. A handler can be a plain value.
+
+### Group
+
+Show several related files as tabs in one block. Fences with the same `group=…` must be adjacent, with no text between them. A tab is named by its `title`. Renderer: runbun static. Runnable: no. Copy: yes.
+
+````md
+```ts title="server.ts" group=demo
+import { Elysia } from 'elysia'
+
+export const app = new Elysia()
+    .get('/', 'Hello Elysia')
+    .listen(3000)
+
+export type App = typeof app
+```
+
+```ts title="client.ts" group=demo
+import { treaty } from '@elysia/eden'
+import type { App } from './server'
+
+const app = treaty<App>('localhost:3000')
+const { data } = await app.get()
+```
+````
+
+```ts title="server.ts" group=demo
+import { Elysia } from 'elysia'
+
+export const app = new Elysia()
+    .get('/', 'Hello Elysia')
+    .listen(3000)
+
+export type App = typeof app
+```
+
+```ts title="client.ts" group=demo
+import { treaty } from '@elysia/eden'
+import type { App } from './server'
+
+const app = treaty<App>('localhost:3000')
+const { data } = await app.get()
+```
+
+### Marks in a group
+
+Each fence in a group keeps its own line marks. Renderer: runbun static. Runnable: no. Copy: yes.
+
+````md
+```ts title="server.ts" group=marks {7}
+import { Elysia } from 'elysia'
+
+export const app = new Elysia()
+    .get('/', 'Hello Elysia')
+    .listen(3000)
+
+export type App = typeof app
+```
+
+```ts title="client.ts" group=marks ins={5}
+import { treaty } from '@elysia/eden'
+import type { App } from './server'
+
+const app = treaty<App>('localhost:3000')
+const { data } = await app.get()
+```
+````
+
+```ts title="server.ts" group=marks {7}
+import { Elysia } from 'elysia'
+
+export const app = new Elysia()
+    .get('/', 'Hello Elysia')
+    .listen(3000)
+
+export type App = typeof app
+```
+
+```ts title="client.ts" group=marks ins={5}
+import { treaty } from '@elysia/eden'
+import type { App } from './server'
+
+const app = treaty<App>('localhost:3000')
+const { data } = await app.get()
+```
+
+## Expressive Code fallbacks
+
+runbun leaves these fences to Expressive Code, Starlight's highlighter. They don't run, and Expressive Code adds its own Copy button.
+
+### Opt out
+
+Force Expressive Code for one fence. Falls back because `runbun=false` is runbun's opt-out. Renderer: Expressive Code. Runnable: no. Copy: yes.
+
+````md
+```ts runbun=false
+import { Elysia } from 'elysia'
+
+new Elysia()
+    .get('/', 'Hello Elysia')
+    .listen(3000)
+```
+````
+
+```ts runbun=false
+import { Elysia } from 'elysia'
+
+new Elysia()
+    .get('/', 'Hello Elysia')
+    .listen(3000)
+```
+
+### Shell
+
+Commands a reader types in a terminal. Falls back because runbun has no terminal frame for shell languages (`bash`, `sh`, `zsh`, `powershell`, `console`, …). Renderer: Expressive Code. Runnable: no. Copy: yes.
+
+````md
+```bash
+bun create elysia app
+cd app
+bun dev
+```
+````
+
+```bash
+bun create elysia app
+cd app
+bun dev
+```
+
+### Unsupported meta
+
+Expressive Code features runbun lacks, such as text marks (`ins="Elysia"`) or `collapse={…}`. Falls back because runbun only reads `title`, `group` and line-range marks; any other meta word goes to Expressive Code. Renderer: Expressive Code. Runnable: no. Copy: yes.
+
+````md
+```ts ins="openapi()"
+import { Elysia } from 'elysia'
+import { openapi } from '@elysia/openapi'
+
+new Elysia()
+    .use(openapi())
+    .listen(3000)
+```
+````
+
+```ts ins="openapi()"
+import { Elysia } from 'elysia'
+import { openapi } from '@elysia/openapi'
+
+new Elysia()
+    .use(openapi())
+    .listen(3000)
+```
+
+### Error preview
+
+Show an intentional TypeScript error: `~~x~~` draws a squiggle, and `//! message` shows the error under its line. This is the docs' own Expressive Code plugin. Falls back because `error-preview` is a meta word runbun doesn't know. Renderer: Expressive Code. Runnable: no. Copy: yes.
+
+````md
+```ts error-preview
+import { Elysia } from 'elysia'
+
+const app = new Elysia()
+
+app.state('build', 1)
+
+app.get('/', ({ store: { ~~build~~ } }) => build) //! Property 'build' does not exist on type '{}'
+```
+````
+
+```ts error-preview
+import { Elysia } from 'elysia'
+
+const app = new Elysia()
+
+app.state('build', 1)
+
+app.get('/', ({ store: { ~~build~~ } }) => build) //! Property 'build' does not exist on type '{}'
+```
+
+## Playgrounds
+
+A fence marked `playground` becomes a runnable embed. Until a reader presses Run it's a static block with a Copy button, and nothing downloads. The page-wide defaults in `src/components/playground/runbun-defaults.astro` (`load=click`, `expand=full`, `features=types`, `layout=stack`) apply unless a fence sets its own.
+
+### Basic playground
+
+A snippet a reader can run and edit, with its output in a console. Renderer: runbun playground. Runnable: yes. Copy: yes.
+
+````md
+```ts playground mode=console height=auto deps="elysia@rc"
+import { Elysia } from 'elysia'
+
+const app = new Elysia().get('/', 'Hello Elysia')
+
+const res = await app.handle(new Request('http://localhost/'))
+console.log(await res.text())
+```
+````
+
+```ts playground mode=console height=auto deps="elysia@rc"
+import { Elysia } from 'elysia'
+
+const app = new Elysia().get('/', 'Hello Elysia')
+
+const res = await app.handle(new Request('http://localhost/'))
+console.log(await res.text())
+```
+
+### Preview
+
+A server whose response shows in a preview pane. The server has to `.listen(3000)`. `path=` sets the first request, `deps=` pins packages, `height=auto` fits the code and `label=` names the embed for assistive technology. Renderer: runbun playground. Runnable: yes. Copy: yes.
+
+````md
+```ts playground mode=preview height=auto label="Elysia playground" path="/user/123" deps="elysia@rc"
+import { Elysia, t } from 'elysia'
+
+new Elysia()
+    .get('/user/:id', {
+        params: t.Object({ id: t.Number() })
+    }, ({ params: { id } }) => id)
+    .listen(3000)
+```
+````
+
+```ts playground mode=preview height=auto label="Elysia playground" path="/user/123" deps="elysia@rc"
+import { Elysia, t } from 'elysia'
+
+new Elysia()
+    .get('/user/:id', {
+        params: t.Object({ id: t.Number() })
+    }, ({ params: { id } }) => id)
+    .listen(3000)
+```
+
+### Preset requests
+
+Requests a reader can try, each in its own preview tab: the runnable replacement for `<CodePlayground>`'s route list. `requests=` takes `;`-separated `METHOD /path` entries, each with an optional body; single quotes keep a JSON body's double quotes. After ` => ` each request carries the response the author expects: before Run the block shows the code and a tab per request with that response (the author's text, not checked against the code), and the live embed only ever gets the requests. Run gives the live tabs: the first request goes when the server starts, each other one the first time its tab opens, and it wins over `path=`. Needs the playground on runbun.dev to have `requests` (not deployed yet). Renderer: runbun playground. Runnable: yes. Copy: yes.
+
+````md
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET / => Hello Elysia; GET /user/617 => 617; POST /form {"hello":"Elysia"} => {"hello":"Elysia"}'
+import { Elysia } from 'elysia'
+
+new Elysia()
+    .get('/', 'Hello Elysia')
+    .get('/user/:id', ({ params: { id } }) => id)
+    .post('/form', ({ body }) => body)
+    .listen(3000)
+```
+````
+
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET / => Hello Elysia; GET /user/617 => 617; POST /form {"hello":"Elysia"} => {"hello":"Elysia"}'
+import { Elysia } from 'elysia'
+
+new Elysia()
+    .get('/', 'Hello Elysia')
+    .get('/user/:id', ({ params: { id } }) => id)
+    .post('/form', ({ body }) => body)
+    .listen(3000)
+```
+
+### Side-by-side layout
+
+The docs stack the preview under the editor by default. `layout=side` puts it beside the editor instead. Frames narrower than 560px stack either way. Renderer: runbun playground. Runnable: yes. Copy: yes.
+
+````md
+```ts playground mode=preview layout=side height=auto label="Elysia playground" deps="elysia@rc"
+import { Elysia } from 'elysia'
+
+new Elysia()
+    .get('/', 'Hello Elysia')
+    .listen(3000)
+```
+````
+
+```ts playground mode=preview layout=side height=auto label="Elysia playground" deps="elysia@rc"
+import { Elysia } from 'elysia'
+
+new Elysia()
+    .get('/', 'Hello Elysia')
+    .listen(3000)
+```
+
+### Playground group
+
+Several files in one runnable embed, one tab per fence. The first fence's options apply. A `hidden` fence is a file of the embed but stays out of the tabs: here a `package.json` that pins the packages instead of `deps=`. Renderer: runbun playground. Runnable: yes. Copy: yes.
+
+````md
+```ts playground group=app mode=preview height=auto label="Elysia playground"
+// index.ts
+import { Elysia } from 'elysia'
+import { greet } from './greet'
+
+new Elysia()
+    .get('/', () => greet('Elysia'))
+    .listen(3000)
+```
+
+```ts playground group=app
+// greet.ts
+export const greet = (name: string) => `Hello ${name}`
+```
+
+```json playground group=app hidden
+//package.json
+{ "dependencies": { "elysia": "rc" } }
+```
+````
+
+```ts playground group=app mode=preview height=auto label="Elysia playground"
+// index.ts
+import { Elysia } from 'elysia'
+import { greet } from './greet'
+
+new Elysia()
+    .get('/', () => greet('Elysia'))
+    .listen(3000)
+```
+
+```ts playground group=app
+// greet.ts
+export const greet = (name: string) => `Hello ${name}`
+```
+
+```json playground group=app hidden
+//package.json
+{ "dependencies": { "elysia": "rc" } }
+```
+
+## Docs components
+
+Components from `src/components`, imported at the top of the page. The source shown is the MDX snippet.
+
+### FileCodeBlock
+
+Show the same step for different tools or setups, one tab each. Each `TabItem` needs a `label`, and holds an ordinary fence. Renderer: docs component, with a runbun static block in each tab. Runnable: no. Copy: yes.
+
+````md
+import FileCodeBlock from '../../components/interactive-code/file-code-block.astro';
+import TabItem from '../../components/interactive-code/tab-item.astro';
+
+<FileCodeBlock>
+<TabItem label="Bun">
+
+```ts title="src/index.ts"
+import { Elysia } from 'elysia'
+
+new Elysia().get('/', 'Hello Elysia').listen(3000)
+```
+
+</TabItem>
+<TabItem label="Node.js">
+
+```ts title="src/index.ts"
+import { Elysia } from 'elysia'
+import { node } from '@elysia/node'
+
+new Elysia({ adapter: node() }).get('/', 'Hello Elysia').listen(3000)
+```
+
+</TabItem>
+</FileCodeBlock>
+````
+
+<FileCodeBlock>
+<TabItem label="Bun">
+
+```ts title="src/index.ts"
+import { Elysia } from 'elysia'
+
+new Elysia().get('/', 'Hello Elysia').listen(3000)
+```
+
+</TabItem>
+<TabItem label="Node.js">
+
+```ts title="src/index.ts"
+import { Elysia } from 'elysia'
+import { node } from '@elysia/node'
+
+new Elysia({ adapter: node() }).get('/', 'Hello Elysia').listen(3000)
+```
+
+</TabItem>
+</FileCodeBlock>
+
+### CodePlayground
+
+A code block with a mocked request runner under it, driven by a real Elysia instance exported from the page. It needs no network. `mock` gives each route's response per method, and `alias` maps a route with parameters to the path the runner shows. Renderer: docs component, with a runbun static block. Runnable: yes, against the mock. Copy: yes.
+
+````md
+import { Elysia } from 'elysia';
+import CodePlayground from '../../components/playground/code.astro';
+
+export const userDemo = new Elysia()
+    .get('/', 'Hello Elysia')
+    .get('/user/:id', ({ params: { id } }) => id);
+
+<CodePlayground
+    elysia={userDemo}
+    alias={{ '/user/:id': '/user/1' }}
+    mock={{ '/user/:id': { GET: '1' } }}
+>
+
+```ts
+import { Elysia } from 'elysia'
+
+new Elysia()
+    .get('/', 'Hello Elysia')
+    .get('/user/:id', ({ params: { id } }) => id)
+    .listen(3000)
+```
+
+</CodePlayground>
+````
+
+<CodePlayground
+    elysia={userDemo}
+    alias={{ '/user/:id': '/user/1' }}
+    mock={{ '/user/:id': { GET: '1' } }}
+>
+
+```ts
+import { Elysia } from 'elysia'
+
+new Elysia()
+    .get('/', 'Hello Elysia')
+    .get('/user/:id', ({ params: { id } }) => id)
+    .listen(3000)
+```
+
+</CodePlayground>

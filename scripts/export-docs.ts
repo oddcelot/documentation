@@ -11,7 +11,11 @@ import { load } from 'js-yaml'
 import { stripLocale } from '../src/lib/locales.mjs'
 import { siteUrl } from '../site.config.mjs'
 
-const skipped = new Set(['design-system/index.html', 'i18n/index.html'])
+const skipped = new Set([
+	'design-system/index.html',
+	'code-blocks/index.html',
+	'i18n/index.html'
+])
 
 const sections: [string, string[]][] = [
 	[

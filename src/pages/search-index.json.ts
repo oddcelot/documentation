@@ -9,7 +9,9 @@ export const prerender = true
 export async function GET() {
 	const docs = await getCollection(
 		'docs',
-		({ id, data }) => !data.draft && stripLocale(id) === id
+		// code-blocks is an internal reference for docs authors, not for readers
+		({ id, data }) =>
+			!data.draft && stripLocale(id) === id && id !== 'code-blocks'
 	)
 	const documents = (
 		await Promise.all(
