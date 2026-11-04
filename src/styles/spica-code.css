@@ -161,6 +161,29 @@
 	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5l10 -10'/%3E%3C/svg%3E");
 }
 
+/* On runbun blocks (static and playground posters alike) the figure anchors the button, and its text label gives way to
+   the icon (aria-label still names it). The hidden label is still a grid item (a second row), so the icon centers
+   itself instead of sharing the grid. */
+.runbun-code {
+	position: relative;
+}
+
+.runbun-code .runbun-copy {
+	font-size: 0;
+}
+
+.runbun-code .runbun-copy::before {
+	position: absolute;
+	inset: 0;
+	margin: auto;
+}
+
+/* A titled block keeps the button in its code, as the docs' other code blocks do, not in the title bar: the same 0.75rem
+   below the bar (8px padding, a 21px line, 8px and its 1px rule: 38px) as an untitled block has below its top. */
+.runbun-code:has(> figcaption) > .runbun-copy {
+	top: calc(38px + 0.75rem);
+}
+
 .spica-code-copy:hover,
 .runbun-code .runbun-copy:hover { background: var(--color-surface-2); }
 .spica-code-copy:active,
@@ -187,6 +210,87 @@
 	.runbun-code .runbun-copy:active { scale: 1; }
 }
 
+/* Runbun notes (@runbun/astro's `// (1)` markers and their popover list): the marker is a soft brand chip like the
+   docs' accent chips, the bubble a small raised card in the docs' type, not the code block's colors. */
+.runbun-code .runbun-note {
+	/* The button is as tall as the code line (its font and line-height are the code's), and the pill is centred in
+	   it, so it sits on the line's middle whatever the block's type size. */
+	display: inline-grid;
+	place-items: center;
+	height: 1lh;
+	min-width: 0;
+	margin-inline-start: 0.5rem;
+	padding: 0;
+	vertical-align: top;
+	border: 0;
+	border-radius: 999px;
+	background: none;
+	font: inherit;
+	line-height: inherit;
+	@apply focus-ring;
+
+	/* The docs' primary icon button: brand pink fill, dark label, its pink shadow. */
+	&::before {
+		display: grid;
+		place-items: center;
+		min-width: 1.25rem;
+		height: 1.25rem;
+		padding: 0 0.3rem;
+		box-sizing: border-box;
+		border-radius: 999px;
+		background: var(--color-primary);
+		box-shadow: var(--shadow-primary);
+		color: var(--color-on-primary);
+		font-family: var(--font-sans);
+		font-size: 0.6875rem;
+		font-weight: 800;
+		font-variant-numeric: tabular-nums;
+		line-height: 1;
+		/* Centred in the line box, the pill reads low: mono glyphs sit above the box's middle (room for descenders). */
+		translate: 0 -0.1em;
+		transition:
+			background-color var(--dur-fast) var(--ease-out),
+			scale var(--dur-fast) var(--ease-out);
+	}
+
+	&:hover::before {
+		background: var(--color-primary-cta-deep);
+	}
+
+	&:active::before {
+		scale: 0.94;
+	}
+}
+
+ol.runbun-notes > li[popover] {
+	max-width: min(22rem, calc(100vw - 2rem));
+	padding: 0.625rem 0.875rem;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-xl);
+	background: var(--color-surface-raised);
+	color: var(--color-ink-soft);
+	box-shadow: var(--shadow-md);
+	font-family: var(--font-sans);
+	font-size: 0.875rem;
+	line-height: 1.5;
+	text-wrap: pretty;
+}
+
+/* Grow from the marker to the right (into the code card) instead of centring on it, which spills past the card's
+   left edge; the marker's centre lines up with the bubble's first characters. */
+@supports (position-area: top) {
+	ol.runbun-notes > li[popover] {
+		position-area: top span-right;
+		margin: 0 0 0.375rem -0.625rem;
+		position-try-fallbacks: flip-block, flip-inline;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.runbun-code .runbun-note::before { transition: none; }
+	.runbun-code .runbun-note:active::before { scale: 1; }
+}
+
 html[data-theme='dark'] {
 	--spica-code-string: var(--color-harmony-left);
 	--spica-code-number: var(--color-harmony-center);
@@ -206,6 +310,184 @@ html[data-theme='dark'] {
 @keyframes run-beam {
 	to {
 		--beam-angle: 360deg;
+	}
+}
+
+/* Static runbun blocks (fences and <Code> without Run, and their tab groups) take the playground card's code type and
+   iris wash. Blocks inside a playground or a runbun tab group are left to their parent. */
+figure.runbun-code:not(bun-playground *) {
+	--runbun-code-font: var(--font-mono);
+	--runbun-code-size: 0.84375rem;
+	--runbun-code-line-height: 1.65;
+	--runbun-code-radius: var(--radius-2xl);
+	--runbun-code-border: var(--color-border);
+	/* The wash is the block's own fill; the highlighter's pre stays clear over it. */
+	--hls-background: transparent;
+	position: relative;
+	background: var(--surface-wash-iris);
+
+	& pre {
+		padding: 0.6875rem 0.8125rem;
+	}
+}
+
+/* Standing alone, a block is the playground card below: the double ring and the magic hairline, so only the Run button
+   tells a playground apart. */
+figure.runbun-code:not(bun-playground *, .runbun-tabs *, .file-code-block *) {
+	margin: calc(1.5rem + 7px) 7px;
+	border: 0;
+	border-radius: var(--radius-2xl);
+	box-shadow:
+		0 0 0 6px var(--color-surface),
+		0 0 0 7px var(--color-border),
+		var(--shadow-xs);
+
+	@supports (mask-composite: exclude) or (-webkit-mask-composite: xor) {
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			padding: 1px;
+			border-radius: inherit;
+			background: var(--gradient-magic-strong);
+			pointer-events: none;
+			-webkit-mask:
+				linear-gradient(#000 0 0) content-box,
+				linear-gradient(#000 0 0);
+			-webkit-mask-composite: xor;
+			mask:
+				linear-gradient(#000 0 0) content-box,
+				linear-gradient(#000 0 0);
+			mask-composite: exclude;
+		}
+	}
+}
+
+/* In a FileCodeBlock the component is the card and its file tabs the header: the block is the panel under them, framed
+   as an Expressive Code block is there (a hairline and a 1rem radius, see .expressive-code pre above). */
+.file-code-block figure.runbun-code:not(bun-playground *, .runbun-tabs *) {
+	/* Concentric with the card: its 1.5rem radius less its 0.375rem padding (file-code-block.astro). */
+	--runbun-code-radius: calc(1.5rem - 0.375rem);
+	margin: 0;
+	border: 1px solid var(--color-border);
+	border-radius: calc(1.5rem - 0.375rem);
+}
+
+/* An Expressive Code block in a FileCodeBlock (shell fences fall back to it) sits in the same card. */
+.file-code-block .expressive-code pre {
+	border-radius: calc(1.5rem - 0.375rem);
+}
+
+/* A runbun file group (```ts group=… fences, <Code files>) is several files of one example, not variants to pick from
+   (those are FileCodeBlock's pill tabs). So it is a titled block with more than one title: the same card as a lone
+   block, and its title bar holds a tab per file in the caption's mono type, the open file in full ink on a pink
+   underline that sits on the bar's rule. runbun's tabs are radios in labels; the checked one is the open file. */
+.runbun-tabs:not(bun-playground *) {
+	--runbun-code-font: var(--font-mono);
+	--runbun-code-size: 0.84375rem;
+	--runbun-code-line-height: 1.65;
+	--runbun-code-border: var(--color-border);
+	--hls-background: transparent;
+	position: relative;
+	margin: calc(1.5rem + 7px) 7px;
+	border: 0;
+	border-radius: var(--radius-2xl);
+	background: var(--surface-wash-iris);
+	box-shadow:
+		0 0 0 6px var(--color-surface),
+		0 0 0 7px var(--color-border),
+		var(--shadow-xs);
+
+	@supports (mask-composite: exclude) or (-webkit-mask-composite: xor) {
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			padding: 1px;
+			border-radius: inherit;
+			background: var(--gradient-magic-strong);
+			pointer-events: none;
+			-webkit-mask:
+				linear-gradient(#000 0 0) content-box,
+				linear-gradient(#000 0 0);
+			-webkit-mask-composite: xor;
+			mask:
+				linear-gradient(#000 0 0) content-box,
+				linear-gradient(#000 0 0);
+			mask-composite: exclude;
+		}
+	}
+
+	/* The title bar: a lone block's caption (38px, its rule below), with tabs instead of one name. */
+	& > .runbun-tablist {
+		padding-inline: 0.375rem;
+		box-shadow: inset 0 -1px var(--color-border);
+	}
+
+	& > .runbun-tablist label {
+		padding: 0.5rem 0.625rem;
+		border-bottom: 2px solid transparent;
+		color: var(--color-ink-muted);
+		opacity: 1;
+		transition:
+			color var(--dur-fast) var(--ease-out),
+			border-color var(--dur-fast) var(--ease-out);
+
+		&:hover {
+			color: var(--color-ink-soft);
+		}
+
+		&:has(input:checked) {
+			border-bottom-color: var(--color-primary);
+			color: var(--color-ink);
+		}
+
+		&:has(input:focus-visible) {
+			outline: 2px solid var(--color-primary);
+			outline-offset: -2px;
+			border-radius: var(--radius-sm);
+		}
+	}
+
+	/* The panels are the card's body: no frame or wash of their own. */
+	& > figure.runbun-code {
+		background: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.runbun-tabs > .runbun-tablist label { transition: none; }
+}
+
+/* Runbun's marked, inserted and deleted lines (`{5-9}`, `mark=`, `ins=`, `del=`) in the docs' colors: marks are a faint
+   brand pink with a 2px pink edge at the code's left (the card's 0.8125rem padding), tying them to the note markers;
+   ins/del take the docs' success and danger, with their deep tones for the +/- sign. */
+.runbun-code {
+	--runbun-mark-bg: color-mix(in oklab, var(--color-primary) 8%, transparent);
+	--runbun-ins-bg: color-mix(in oklab, var(--color-success) 14%, transparent);
+	--runbun-del-bg: color-mix(in oklab, var(--color-danger) 12%, transparent);
+
+	& .runbun-lines > .line[data-mark]::after {
+		content: '';
+		position: absolute;
+		inset-block: 0;
+		left: -0.8125rem;
+		width: 2px;
+		background: var(--color-primary);
+	}
+
+	/* runbun centres the sign in a 1rem gutter; the card's padding is 0.8125rem, so the gutter fits that instead. */
+	& .runbun-lines > .line:is([data-ins], [data-del])::before {
+		left: -0.8125rem;
+		width: 0.8125rem;
+	}
+
+	& .runbun-lines > .line[data-ins]::before {
+		color: var(--color-success-deep);
+	}
+
+	& .runbun-lines > .line[data-del]::before {
+		color: var(--color-danger-deep);
 	}
 }
 
@@ -255,23 +537,6 @@ bun-playground {
 
 	& .runbun-code pre {
 		padding: 0.6875rem 0.8125rem;
-	}
-
-	/* Its copy button is the docs' icon button (above): the figure anchors it, and its text label gives way to the icon
-	   (aria-label still names it). */
-	& .runbun-code {
-		position: relative;
-	}
-
-	& .runbun-code .runbun-copy {
-		font-size: 0;
-	}
-
-	/* The hidden label is still a grid item (a second row), so the icon centers itself instead of sharing the grid. */
-	& .runbun-code .runbun-copy::before {
-		position: absolute;
-		inset: 0;
-		margin: auto;
 	}
 
 	/* Run is quiet, as the page actions are, until hovered: then a beam of light circles its border (after
