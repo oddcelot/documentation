@@ -134,7 +134,10 @@
 	padding: 0;
 	border: 0;
 	border-radius: 0.75rem;
-	background: transparent;
+	background: color-mix(in oklab, var(--color-surface-raised) 88%, transparent);
+	-webkit-backdrop-filter: blur(6px);
+	backdrop-filter: blur(6px);
+	box-shadow: 0 0 0 1px var(--color-border);
 	color: var(--color-ink-soft);
 	cursor: pointer;
 	opacity: 0;
