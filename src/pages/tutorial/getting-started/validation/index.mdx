@@ -5,6 +5,7 @@ description: "Elysia offers built-in data validation using schemas to ensure req
 
 import Lesson from '../../../../components/tutorial/lesson.astro';
 import DocLink from '../../../../components/tutorial/doc-link.astro';
+import StepsAnswer from '../../../../components/tutorial/steps-answer.astro';
 
 <Lesson title={frontmatter.title} description={frontmatter.description} doc="/essential/validation/">
 
@@ -17,7 +18,7 @@ You can use `t` from `elysia` to define a schema.
 ```typescript
 import { Elysia, t } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.post(
 		'/user',
 		{
@@ -27,7 +28,8 @@ new Elysia()
 			})
 		}, ({ body: { name } }) => `Hello ${name}!`
 	)
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 When you define a schema, Elysia will ensure the data is in a correct shape.
@@ -43,7 +45,7 @@ Alternatively, Elysia support **Standard Schema**, allowing you to use a library
 import { Elysia } from 'elysia'
 import { z } from 'zod'
 
-new Elysia()
+export const app = new Elysia()
 	.post(
 		'/user',
 		{
@@ -53,7 +55,8 @@ new Elysia()
 			})
 		}, ({ body: { name } }) => `Hello ${name}!`
 	)
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 See <DocLink href="/essential/validation/#standard-schema">Standard schema</DocLink> for all compatible schema.
@@ -79,7 +82,7 @@ You can also specify which status code to validate:
 ```typescript
 import { Elysia, t } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.get(
 		'/user',
 		{
@@ -91,7 +94,8 @@ new Elysia()
 			}
 		}, () => `Hello Elysia!`
 	)
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 See <DocLink href="/essential/validation/#response">Response validation</DocLink>.
@@ -104,20 +108,7 @@ Let's exercise what we have learned.
 
 We can define a schema by using `t.Object` provided to the `body` property.
 
-```typescript
-import { Elysia, t } from 'elysia'
-
-new Elysia()
-	.post(
-		'/user',
-		{
-			body: t.Object({
-				name: t.String()
-			})
-		}, ({ body: { name } }) => `Hello ${name}!`
-	)
-	.listen(3000)
-```
+<StepsAnswer />
 
 </Fragment>
 

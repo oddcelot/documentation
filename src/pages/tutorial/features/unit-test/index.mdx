@@ -1,9 +1,8 @@
 ---
 title: "Unit test"
-description: "Elysia provides a Elysia.fetch function to easily test your application."
+description: "Elysia provides an Elysia.handle method to easily test your application."
 ---
 
-import { IconCode } from '@tabler/icons-react';
 import Lesson from '../../../../components/tutorial/lesson.astro';
 import DocLink from '../../../../components/tutorial/doc-link.astro';
 
@@ -11,9 +10,9 @@ import DocLink from '../../../../components/tutorial/doc-link.astro';
 
 # Unit test
 
-Elysia provides a **Elysia.fetch** function to easily test your application.
+Elysia provides an **Elysia.handle** method to easily test your application.
 
-**Elysia.fetch** takes a Web Standard Request, and returns a Response similar to the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API" target="_blank">browser's fetch API</a>.
+**Elysia.handle** takes a Web Standard Request, and returns a promise of a Response similar to the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API" target="_blank">browser's fetch API</a>.
 
 ```typescript
 import { Elysia } from 'elysia'
@@ -21,7 +20,7 @@ import { Elysia } from 'elysia'
 const app = new Elysia()
 	.get('/', 'Hello World')
 
-const response = await app.fetch(new Request('http://localhost/'))
+const response = await app.handle(new Request('http://localhost/'))
 console.log(await response.text())
 ```
 
@@ -39,7 +38,7 @@ describe('Elysia', () => {
 	it('should return Hello World', async () => {
 		const app = new Elysia().get('/', 'Hello World')
 
-		const response = await app.fetch(new Request('http://localhost/'))
+		const response = await app.handle(new Request('http://localhost/'))
 		const text = await response.text()
 
 		expect(text).toBe('Hello World')
@@ -56,7 +55,7 @@ describe('Elysia', () => {
 	it('should return Hello World', async () => {
 		const app = new Elysia().get('/', 'Hello World')
 
-		const response = await app.fetch(new Request('http://localhost/'))
+		const response = await app.handle(new Request('http://localhost/'))
 		const text = await response.text()
 
 		expect(text).toBe('Hello World')
@@ -73,7 +72,7 @@ describe('Elysia', () => {
 	test('should return Hello World', async () => {
 		const app = new Elysia().get('/', 'Hello World')
 
-		const response = await app.fetch(new Request('http://localhost/'))
+		const response = await app.handle(new Request('http://localhost/'))
 		const text = await response.text()
 
 		expect(text).toBe('Hello World')
@@ -85,6 +84,8 @@ See <DocLink href="/patterns/unit-test/">Unit test</DocLink>.
 
 ## Assignment
 
-Let's click the <IconCode className="inline -translate-y-0.5" size={18} /> icon in the preview to see how's the request is logged.
+The playground has a second file, `index.test.ts`, which imports `app` from `index.ts` and tests it with `app.handle`.
+
+Type `bun test` in the playground's console to run it. Then change the response in `index.ts` and run `bun test` again to see the test fail.
 
 </Lesson>

@@ -1,0 +1,25 @@
+---
+// The answer of a lesson with `_steps`: each step that introduces checks, as the code that passes them.
+// runbun-lesson.tsx handles the buttons.
+import { Code } from '@runbun/astro/components'
+import { Button } from '../ui/button'
+import { findLesson } from './lessons'
+import { lessonSteps } from './steps'
+
+const id = findLesson(Astro.url.pathname)?.id
+const steps = id ? (lessonSteps(id) ?? []) : []
+---
+
+{
+	steps
+		.filter(({ checks }) => checks.length)
+		.map(({ slug, files: { 'index.ts': code, ...files }, checks }) => (
+			<section>
+				<h3>{checks.map(({ title }) => title).join(', ')}</h3>
+				<Code code={code} title="index.ts" files={files} />
+				<Button variant="tertiary" size="sm" data-tutorial-solution={slug}>
+					Use solution
+				</Button>
+			</section>
+		))
+}

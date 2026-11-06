@@ -18,7 +18,7 @@ export default function Answer({ html }: { html: string }) {
 					<IconChevronDown size={16} stroke={1.5} aria-hidden="true" className="shrink-0 transition-transform duration-[220ms] ease-out group-data-[panel-open]:rotate-180 group-focus-visible:transition-none motion-reduce:transition-none" />
 				</Collapsible.Trigger>
 			</h2>
-			<Collapsible.Panel hiddenUntilFound className="tutorial-answer-panel h-(--collapsible-panel-height) overflow-hidden transition-[height,opacity] duration-[220ms] ease-out data-[starting-style]:h-0 data-[starting-style]:opacity-0 data-[ending-style]:h-0 data-[ending-style]:opacity-0 motion-reduce:transition-none">
+			<Collapsible.Panel hiddenUntilFound className="tutorial-answer-panel h-(--collapsible-panel-height) overflow-clip [overflow-clip-margin:8px] transition-[height,opacity] duration-[220ms] ease-out data-[starting-style]:h-0 data-[starting-style]:opacity-0 data-[ending-style]:h-0 data-[ending-style]:opacity-0 motion-reduce:transition-none">
 				<div className="sl-markdown-content pt-4" dangerouslySetInnerHTML={{ __html: html }} />
 			</Collapsible.Panel>
 		</Collapsible.Root>

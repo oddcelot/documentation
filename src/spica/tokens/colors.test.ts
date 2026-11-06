@@ -153,17 +153,6 @@ test('dark semantic text, action labels, controls and code retain contrast on th
 			for (const foreground of [spicaDark.colors['editor.foreground'], ...spicaDark.tokenColors.map(({ settings }) => settings.foreground)]) check(`code ${foreground} / ${wash} or marked line`, color(foreground), background);
 		}
 	}
-	const monaco = readFileSync(new URL('../../components/tutorial/playground-monaco.tsx', import.meta.url), 'utf8');
-	const editorColors = Object.fromEntries([...monaco.matchAll(/'([\w.]+)': dark \? '(#[\da-fA-F]+)'/g)].map(([, name, value]) => [name, value]));
-	const editorBackgrounds = [color('surface'), color(editorColors['editorWidget.background'])];
-	for (const [name, hex] of Object.entries(editorColors)) {
-		if (/lineHighlightBackground|selectionBackground|inactiveSelectionBackground|selectedBackground/.test(name)) {
-			for (const background of [color('surface'), color(editorColors['editorWidget.background'])]) editorBackgrounds.push(blend(color(hex), background, parseInt(hex.slice(7) || 'ff', 16) / 255));
-		}
-	}
-	for (const background of editorBackgrounds) {
-		for (const foreground of [spicaDark.colors['editor.foreground'], ...spicaDark.tokenColors.map(({ settings }) => settings.foreground), editorColors['editorLineNumber.foreground'], editorColors['editorLineNumber.activeForeground']]) check(`Monaco text ${foreground}`, color(foreground), background);
-	}
 	const failures = checked.filter(({ ratio, minimum }) => !Number.isFinite(ratio) || ratio < minimum);
 	expect(failures.map(({ label, ratio, minimum }) => `${label}: ${ratio.toFixed(2)} < ${minimum}`)).toEqual([]);
 });

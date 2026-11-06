@@ -5,6 +5,7 @@ description: "Elysia provides a guard method to bulk add hooks and schema to mul
 
 import Lesson from '../../../../components/tutorial/lesson.astro';
 import DocLink from '../../../../components/tutorial/doc-link.astro';
+import StepsAnswer from '../../../../components/tutorial/steps-answer.astro';
 
 <Lesson title={frontmatter.title} description={frontmatter.description} doc="/essential/plugin/#guard">
 
@@ -13,11 +14,11 @@ import DocLink from '../../../../components/tutorial/doc-link.astro';
 When you need to apply multiple hooks to your application, instead of repeating hooks multiple times, you can use `guard` to bulk add hooks to your application.
 
 ```typescript ins={13-25} del={4-12}
-import { Elysia, t } from 'elysia'
+import { Elysia } from 'elysia'
 
-new Elysia()
-	.onBeforeHandle(({ query: { name }, status }) => {
-		if(!name) return status(401)
+export const app = new Elysia()
+	.onBeforeHandle(({ headers: { authorization }, status }) => {
+		if(!authorization) return status(401)
 	})
 	.onBeforeHandle(({ query: { name } }) => {
 		console.log(name)
@@ -27,8 +28,8 @@ new Elysia()
 	})
 	.guard({
 		beforeHandle: [
-			({ query: { name }, status }) => {
-				if(!name) return status(401)
+			({ headers: { authorization }, status }) => {
+				if(!authorization) return status(401)
 			},
 			({ query: { name } }) => {
 				console.log(name)
@@ -38,35 +39,22 @@ new Elysia()
 			console.log(responseValue)
 		}
 	})
-	.get(
-		'/auth',
-		{
-			query: t.Object({
-				name: t.String()
-			})
-		}, ({ query: { name = 'anon' } }) => `Hello ${name}!`
-	)
-	.get(
-		'/profile',
-		{
-			query: t.Object({
-				name: t.String()
-			})
-		}, ({ query: { name = 'anon' } }) => `Hello ${name}!`
-	)
-	.listen(3000)
+	.get('/auth', ({ query: { name = 'anon' } }) => `Hello ${name}!`)
+	.get('/profile', ({ query: { name = 'anon' } }) => `Hello ${name}!`)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 Not only that, you can also apply **schema** to multiple routes using `guard`.
 
-```typescript ins={16-18} del={23-27,32-36}
+```typescript ins={16-18} del={22-26,31-35}
 import { Elysia, t } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.guard({
 		beforeHandle: [
-			({ query: { name }, status }) => {
-				if(!name) return status(401)
+			({ headers: { authorization }, status }) => {
+				if(!authorization) return status(401)
 			},
 			({ query: { name } }) => {
 				console.log(name)
@@ -85,7 +73,8 @@ new Elysia()
 			query: t.Object({
 				name: t.String()
 			})
-		}, ({ query: { name = 'anon' } }) => `Hello ${name}!`
+		},
+		({ query: { name } }) => `Hello ${name}!`
 	)
 	.get(
 		'/profile',
@@ -93,9 +82,11 @@ new Elysia()
 			query: t.Object({
 				name: t.String()
 			})
-		}, ({ query: { name = 'anon' } }) => `Hello ${name}!`
+		},
+		({ query: { name } }) => `Hello ${name}!`
 	)
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 This will apply hooks and schema to every route **after .guard** is called in the same instance.
@@ -104,27 +95,13 @@ See <DocLink href="/essential/plugin/#guard">Guard</DocLink> for more informatio
 
 ## Assignment
 
-Let's put 2 types of hooks into practice.
+Let's protect `/auth` and `/profile` with a single `guard`, while `/` stays public.
 
 <Fragment slot="answer">
 
-We can use `beforeHandle` to intercept the request before it reaches the handler, and return a response with `status` method.
+We can call `guard` after `/`, so its hook and schema apply only to the routes registered after it.
 
-```typescript
-import { Elysia } from 'elysia'
-
-new Elysia()
-	.onBeforeHandle(({ query: { name }, status }) => {
-		if(!name) return status(401)
-	})
-	.get('/auth', ({ query: { name = 'anon' } }) => {
-		return `Hello ${name}!`
-	})
-	.get('/profile', ({ query: { name = 'anon' } }) => {
-		return `Hello ${name}!`
-	})
-	.listen(3000)
-```
+<StepsAnswer />
 
 </Fragment>
 

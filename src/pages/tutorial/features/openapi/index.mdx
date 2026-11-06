@@ -18,7 +18,7 @@ We can use <DocLink href="/patterns/openapi/">OpenAPI plugin</DocLink> to show a
 import { Elysia, t } from 'elysia'
 import { openapi } from '@elysia/openapi'
 
-new Elysia()
+export const app = new Elysia()
 	.use(openapi())
 	.post(
 		'/',
@@ -28,19 +28,20 @@ new Elysia()
 			})
 		}, ({ body }) => body
 	)
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
-Once added, we can access our API documentation by switching the request bar path to `/openapi`.
+Once added, we can access our API documentation by sending a **GET** request to `/openapi` from the preview.
 
 ## Detail
-We can provide API documentation with a `detail` field which follows OpenAPI 3.0 specification (with auto-completion):
+We can provide API documentation with a `detail` field which follows the OpenAPI 3.1 specification (with auto-completion):
 
-```typescript ins={13-17}
+```typescript ins={12-16}
 import { Elysia, t } from 'elysia'
 import { openapi } from '@elysia/openapi'
 
-new Elysia()
+export const app = new Elysia()
 	.use(openapi())
 	.post(
 		'/',
@@ -55,17 +56,18 @@ new Elysia()
 			}
 		}, ({ body }) => body
 	)
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 ## Reference model
 We can also define reusable schema with <DocLink href="/patterns/openapi/#reference-model">Reference model</DocLink>:
 
-```typescript ins={7-9,18} del={15-17}
+```typescript ins={6-10,17} del={14-16}
 import { Elysia, t } from 'elysia'
 import { openapi } from '@elysia/openapi'
 
-new Elysia()
+export const app = new Elysia()
 	.use(openapi())
 	.model({
 		age: t.Object({
@@ -75,7 +77,7 @@ new Elysia()
 	.post(
 		'/',
 		{
-			age: t.Object({
+			body: t.Object({
 				age: t.Number()
 			}),
 			body: 'age',
@@ -86,7 +88,8 @@ new Elysia()
 			}
 		}, ({ body }) => body
 	)
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 When we defined a reference model, it will be shown in the **Components** section of the OpenAPI documentation.
@@ -102,24 +105,25 @@ For example, if you use Drizzle ORM or Prisma, Elysia can infer the schema direc
 
 > Returning Drizzle query from Elysia route handler will be automatically inferred into OpenAPI schema.
 
-To use <DocLink href="/blog/openapi-type-gen/">OpenAPI type gen</DocLink>, simply apply the `fromTypes` plugin before `openapi` plugin.
+To use <DocLink href="/blog/openapi-type-gen/">OpenAPI type gen</DocLink>, pass `fromTypes()` to the `references` option of the `openapi` plugin.
 
 ```typescript ins={3,7}
 import { Elysia } from 'elysia'
 
 import { openapi, fromTypes } from '@elysia/openapi'
 
-new Elysia()
+export const app = new Elysia()
 	.use(openapi({
 		references: fromTypes()
 	}))
 	.get('/', { hello: 'world' })
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
-### Browser environment
+### Try it locally
 
-Unfortunately, this feature requires the **fs** module to read your source code, and is not available in this web playground. As Elysia is running directly in your browser (not a separated server).
+`fromTypes` runs the TypeScript compiler (`tsc`) over your source code (`src/index.ts` by default). This playground only installs `elysia` and `@elysia/openapi`, not TypeScript, so the feature isn't available here.
 
 You can try this feature locally with <a href="https://github.com/SaltyAom/elysia-typegen-example" target="_blank">Type Gen Example repository</a>:
 

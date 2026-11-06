@@ -5,6 +5,7 @@ description: "Macro is a reusable route option. Learn how to create and use macr
 
 import Lesson from '../../../../components/tutorial/lesson.astro';
 import DocLink from '../../../../components/tutorial/doc-link.astro';
+import StepsAnswer from '../../../../components/tutorial/steps-answer.astro';
 
 <Lesson title={frontmatter.title} description={frontmatter.description} doc="/patterns/macro/">
 
@@ -17,16 +18,17 @@ Imagine we have an authentication check like this:
 ```typescript
 import { Elysia, t } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.post('/user', {
 		cookie: t.Object({
 			session: t.String()
 		}),
-		beforeHandle({ cookie: { session } }) {
-			if(!session.value) throw 'Unauthorized'
+		beforeHandle({ cookie: { session }, status }) {
+			if(!session.value) return status(401)
 		}
 	}, ({ body }) => body)
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 If we have multiple routes that require authentication, we have to repeat the same options over and over again.
@@ -36,12 +38,12 @@ Instead, we can use a macro to reuse route options:
 ```typescript ins={14}
 import { Elysia, t } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.macro({ auth: {
 		cookie: t.Object({
 			session: t.String()
 		}),
-		// psuedo auth check
+		// pseudo auth check
 		beforeHandle({ cookie: { session }, status }) {
 			if(!session.value) return status(401)
 		}
@@ -49,7 +51,8 @@ new Elysia()
 	.post('/user', {
 		auth: true
 	}, ({ body }) => body)
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 **auth** will then inline both **cookie**, and **beforeHandle** to the route.
@@ -61,10 +64,15 @@ Simply put, <DocLink href="/patterns/macro/">Macro</DocLink> **is a reusable rou
 Let's define a macro to check if a body is a Fibonacci number:
 
 ```typescript
+function isPerfectSquare(x: number) {
+	const s = Math.floor(Math.sqrt(x))
+	return s * s === x
+}
+
 function isFibonacci(n: number) {
-	let a = 0, b = 1
-	while(b < n) [a, b] = [b, a + b]
-	return b === n || n === 0
+	if (n < 0) return false
+
+	return isPerfectSquare(5 * n * n + 4) || isPerfectSquare(5 * n * n - 4)
 }
 ```
 
@@ -73,32 +81,7 @@ function isFibonacci(n: number) {
 1. To enforce type, we can define a `body` property in the macro.
 2. To short-circuit the request, we can use `status` function to return early.
 
-```typescript
-import { Elysia, t } from 'elysia'
-
-function isPerfectSquare(x: number) {
-    const s = Math.floor(Math.sqrt(x))
-    return s * s === x
-}
-
-function isFibonacci(n: number) {
-    if (n < 0) return false
-
-    return isPerfectSquare(5 * n * n + 4) || isPerfectSquare(5 * n * n - 4)
-}
-
-new Elysia()
-    .macro({ isFibonacci: {
-		body: t.Number(),
-        beforeHandle({ body, status }) {
-            if(!isFibonacci(body)) return status(418)
-        }
-    } })
-	.post('/', {
-		isFibonacci: true
-	}, ({ body }) => body)
-    .listen(3000)
-```
+<StepsAnswer />
 
 </Fragment>
 

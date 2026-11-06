@@ -5,6 +5,7 @@ description: "Elysia offers an interactive tutorial experience to learn Elysia w
 
 import { IconBookmark } from '@tabler/icons-react';
 import Lesson from '../../components/tutorial/lesson.astro';
+import StepsAnswer from '../../components/tutorial/steps-answer.astro';
 
 <Lesson title={frontmatter.title} description={frontmatter.description} doc="/at-glance/">
 
@@ -12,7 +13,7 @@ import Lesson from '../../components/tutorial/lesson.astro';
 
 It's great to have you here! This playground will help you get started with Elysia interactively.
 
-Unlike traditional backend frameworks, **Elysia can run in a browser**! Although it doesn't support all features, it's a perfect environment for learning and experimentation.
+Each lesson comes with a code editor that runs your code with Bun, so there's nothing to install. It's a perfect environment for learning and experimentation.
 
 You can open the API docs at any time with the **Docs** tab at the top of this pane, or by clicking a <IconBookmark className="inline" size={18} stroke={2} /> link in the text.
 
@@ -35,29 +36,36 @@ Although Elysia has some framework-specific concepts to learn, once users get th
 
 ## How to use this playground
 
-Playground is divided into 3 sections:
-1. Documentation and task on the left side (what you're currently reading).
-2. Code editor in the top right
-3. Preview, output, and console in the bottom right
+Playground is divided into 2 sections:
+1. Documentation and assignments on the left side (what you're currently reading).
+2. Code editor on the right side, which runs your code.
+
+Assignments are checked as you edit the code: each one sends requests to your app and is ticked once the response is right. If you're stuck, open **Show answer** below the assignments.
+
+Every lesson's code looks like this:
+
+```typescript
+import { Elysia } from 'elysia'
+
+export const app = new Elysia()
+	.get('/', 'Hello World!')
+
+if (import.meta.main) app.listen(3000)
+```
+
+The app is exported so the assignments can import it and send it requests without starting a server. `import.meta.main` is only true when the file runs directly, like `bun index.ts`, so that's the only time `listen` starts the server.
 
 ## Assignment
 
 For the first assignment, let's modify the code to make the server respond with `"Hello Elysia!"` instead of `"Hello World!"`.
 
-Feel free to look around the code editor and preview section to get familiar with the environment.
+Feel free to look around the code editor to get familiar with the environment.
 
 <Fragment slot="answer">
 
 You can change the response by changing the content inside the `.get` method from `'Hello World!'` to `'Hello Elysia!'`.
 
-```typescript ins={5} del={4}
-import { Elysia } from 'elysia'
-
-new Elysia()
-	.get('/', 'Hello World!')
-	.get('/', 'Hello Elysia!')
-	.listen(3000)
-```
+<StepsAnswer />
 
 Now Elysia will respond with `"Hello Elysia!"` when you access `/`.
 

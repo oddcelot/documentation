@@ -5,6 +5,7 @@ description: "Learn how to manage cookies in Elysia, including setting, retrievi
 
 import Lesson from '../../../../components/tutorial/lesson.astro';
 import DocLink from '../../../../components/tutorial/doc-link.astro';
+import StepsAnswer from '../../../../components/tutorial/steps-answer.astro';
 
 <Lesson title={frontmatter.title} description={frontmatter.description} doc="/patterns/cookie/">
 
@@ -15,25 +16,26 @@ You interact with cookies by using <DocLink href="/patterns/cookie/">cookie</Doc
 ```typescript
 import { Elysia } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.get('/', ({ cookie: { visit } }) => {
 		visit.value = Number(visit.value ?? 0) + 1
 
 		return `You have visited ${visit.value} times`
 	})
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 Cookie is a reactive object. Once modified, it will be reflected in response.
 
 ## Value
 
-Elysia will then try to coerce it into its respective value when a type annotation if provided.
+Elysia will then try to coerce it into its respective value when a type annotation is provided.
 
 ```typescript
 import { Elysia, t } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.get('/', {
 		cookie: t.Object({
 			visit: t.Optional(
@@ -48,7 +50,8 @@ new Elysia()
 
 		return `You have visited ${visit.value.total} times`
 	})
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 We can use <DocLink href="/patterns/cookie/#cookie-schema">cookie schema</DocLink> to validate and parse cookie.
@@ -56,19 +59,19 @@ We can use <DocLink href="/patterns/cookie/#cookie-schema">cookie schema</DocLin
 ## Attribute
 We can get/set cookie attribute by its respective property name.
 
-Otherwise, use `.set()` to bulk set attribute.
+Otherwise, use `.update()` to set several attributes at once. `.set()` also exists, but it resets the attributes you don't pass, so `httpOnly` above would be lost.
 
 ```typescript
 import { Elysia } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.get('/', ({ cookie: { visit } }) => {
 		visit.value = Number(visit.value ?? 0) + 1
 
 		visit.httpOnly = true
 		visit.path = '/'
 
-		visit.set({
+		visit.update({
 			sameSite: 'lax',
 			secure: true,
 			maxAge: 60 * 60 * 24 * 7
@@ -76,7 +79,8 @@ new Elysia()
 
 		return `You have visited ${visit.value} times`
 	})
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 See <DocLink href="/patterns/cookie/#assign-property">Cookie attribute</DocLink>.
@@ -88,13 +92,14 @@ We can remove cookie by calling `.remove()` method.
 ```typescript
 import { Elysia } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.get('/', ({ cookie: { visit } }) => {
 		visit.remove()
 
 		return `Cookie removed`
 	})
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 ## Cookie signature
@@ -106,7 +111,7 @@ Elysia can sign cookies to prevent tampering by:
 ```typescript
 import { Elysia, t } from 'elysia'
 
-new Elysia({
+export const app = new Elysia({
 	cookie: {
 		secrets: 'Fischl von Luftschloss Narfidort',
 	}
@@ -124,7 +129,8 @@ new Elysia({
 
 		return `You have visited ${visit.value} times`
 	})
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 If multiple secrets are provided, Elysia will use the first secret to sign cookies, and try to verify with the rest.
@@ -139,26 +145,7 @@ Let's create a simple counter that tracks how many times you have visited the si
 1. We can update the cookie value by modifying `visit.value`.
 2. We can set **HTTP only** attribute by setting `visit.httpOnly = true`.
 
-```typescript
-import { Elysia, t } from 'elysia'
-
-new Elysia()
-	.get('/', {
-		cookie: t.Object({
-			visit: t.Optional(
-				t.Number()
-			)
-		})
-	}, ({ cookie: { visit } }) => {
-		visit.value ??= 0
-		visit.value++
-
-		visit.httpOnly = true
-
-		return `You have visited ${visit.value} times`
-	})
-	.listen(3000)
-```
+<StepsAnswer />
 
 </Fragment>
 

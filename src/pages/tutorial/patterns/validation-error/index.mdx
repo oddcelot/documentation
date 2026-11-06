@@ -5,6 +5,7 @@ description: "Learn how to customize validation error messages in Elysia, includ
 
 import Lesson from '../../../../components/tutorial/lesson.astro';
 import DocLink from '../../../../components/tutorial/doc-link.astro';
+import StepsAnswer from '../../../../components/tutorial/steps-answer.astro';
 
 <Lesson title={frontmatter.title} description={frontmatter.description} doc="/patterns/error-handling/#custom-validation-message">
 
@@ -12,10 +13,10 @@ import DocLink from '../../../../components/tutorial/doc-link.astro';
 
 If you use `t` from `elysia` for validation, you can provide a custom error message based on the field that fails the validation.
 
-```typescript ins={10,13}
+```typescript ins={9,12}
 import { Elysia, t } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.post(
 		'/',
 		{
@@ -28,7 +29,8 @@ new Elysia()
 			})
 		}, ({ body }) => body
 	)
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 Elysia will override the default error message with the custom one you provide, see <DocLink href="/patterns/error-handling/#custom-validation-message">Custom validation message</DocLink>.
@@ -66,14 +68,14 @@ By default Elysia also provides a <DocLink href="/patterns/error-handling/#valid
 }
 ```
 
-However, when you provide a custom error message, it will completely override <DocLink href="/patterns/error-handling/#validation-detail">Validation detail</DocLink>
+However, when you provide a custom error message, it will completely override <DocLink href="/patterns/error-handling/#validation-detail">Validation detail</DocLink>, and the response is just your message.
 
-To bring back the validation detail, you can wrap your custom error message in a <DocLink href="/patterns/error-handling/#validation-detail">Validation detail</DocLink> function.
+To keep the validation issues alongside your message, wrap it in a <DocLink href="/patterns/error-handling/#validation-detail">Validation detail</DocLink> function. The response is then JSON with your `message` and the `errors` list, in a smaller shape than the default above.
 
-```typescript ins={1,10,13}
+```typescript ins={1,9,12}
 import { Elysia, t, validationDetail } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.post(
 		'/',
 		{
@@ -86,7 +88,8 @@ new Elysia()
 			})
 		}, ({ body }) => body
 	)
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 ## Assignment
@@ -97,22 +100,7 @@ Provide your own validation message when the request body contains an invalid ag
 
 We can provide a custom error message by providing `error` property to the schema.
 
-```typescript ins={10}
-import { Elysia, t } from 'elysia'
-
-new Elysia()
-	.post(
-		'/',
-		{
-			body: t.Object({
-				age: t.Number({
-                    error: 'Age must be a number'
-                })
-			})
-		}, ({ body }) => body
-	)
-	.listen(3000)
-```
+<StepsAnswer />
 
 </Fragment>
 

@@ -5,6 +5,7 @@ description: "Learn how to extend the context in Elysia using decorate, state, a
 
 import Lesson from '../../../../components/tutorial/lesson.astro';
 import DocLink from '../../../../components/tutorial/doc-link.astro';
+import StepsAnswer from '../../../../components/tutorial/steps-answer.astro';
 
 <Lesson title={frontmatter.title} description={frontmatter.description} doc="/essential/handler/#extend-context">
 
@@ -29,13 +30,15 @@ class Logger {
     }
 }
 
-new Elysia()
+export const app = new Elysia()
     .decorate('logger', new Logger())
     .get('/', ({ logger }) => {
         logger.log('hi')
 
         return 'hi'
     })
+
+if (import.meta.main) app.listen(3000)
 ```
 
 Decorated value it will be available in the context as a read-only property, see <DocLink href="/essential/handler/#extend-context">Decorate</DocLink>.
@@ -46,13 +49,15 @@ A **mutable** reference that is shared across all requests.
 ```typescript
 import { Elysia } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.state('count', 0)
 	.get('/', ({ store }) => {
 		store.count++
 
 		return store.count
 	})
+
+if (import.meta.main) app.listen(3000)
 ```
 
 State will be available in **context.store** that is shared across every request, see <DocLink href="/essential/handler/#extend-context">State</DocLink>.
@@ -68,11 +73,13 @@ The first two requests return `1`, then `2`. Increment `store.count` to update t
 ```typescript
 import { Elysia } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.derive(({ headers: { authorization } }) => ({
 		authorization
 	}))
 	.get('/', ({ authorization }) => authorization)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 Any **returned value will be available in context** except status, which will be send to client directly, and abort the subsequent handlers.
@@ -99,10 +106,11 @@ const plugin = new Elysia()
 		})
 	)
 
-new Elysia()
+export const app = new Elysia()
 	.use(plugin)
 	.get('/', ({ authorization }) => authorization)
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 ## Assignment
@@ -113,35 +121,7 @@ Let's try to extend Elysia's context.
 
 We can use <DocLink href="/essential/life-cycle/#derive">derive</DocLink> to extract age from query.
 
-```typescript
-import { Elysia, t } from 'elysia'
-
-class Logger {
-	log(info: string) {
-		console.log(info)
-	}
-}
-
-new Elysia()
-	.decorate('logger', new Logger())
-	.onRequest(({ request, logger }) => {
-		logger.log(`Request to ${request.url}`)
-	})
-	.guard({
-		query: t.Optional(
-			t.Object({
-				age: t.Number({ minimum: 15 })
-			})
-		)
-	})
-	.derive(({ query: { age }, status }) => {
-		if(!age) return status(401)
-
-		return { age }
-	})
-	.get('/profile', ({ age }) => age)
-	.listen(3000)
-```
+<StepsAnswer />
 
 </Fragment>
 

@@ -5,6 +5,7 @@ description: "Learn how to manage status codes and headers in Elysia to control 
 
 import Lesson from '../../../../components/tutorial/lesson.astro';
 import DocLink from '../../../../components/tutorial/doc-link.astro';
+import StepsAnswer from '../../../../components/tutorial/steps-answer.astro';
 
 <Lesson title={frontmatter.title} description={frontmatter.description} doc="/essential/handler/#status">
 
@@ -28,9 +29,10 @@ You can also return a status code by returning your response using the `status` 
 ```typescript
 import { Elysia } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.get('/', ({ status }) => status(418, "I'm a teapot"))
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 The status code can be a number or a string status name. These are equivalent:
@@ -51,9 +53,10 @@ Similarly, you can also redirect the request to another URL by returning the `re
 ```typescript
 import { Elysia } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.get('/', ({ redirect }) => redirect('https://next.elysiajs.com/'))
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 See <DocLink href="/essential/handler/#redirect">Redirect</DocLink>.
@@ -67,13 +70,14 @@ That's why instead of returning a `headers` function, Elysia provides a `set.hea
 ```typescript
 import { Elysia } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.get('/', ({ set }) => {
 		set.headers['x-powered-by'] = 'Elysia'
 
 		return 'Hello World'
 	})
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 Because `headers` represents **request headers**, Elysia distinguishes between request headers and response headers by prefixing **set.headers** for response.
@@ -87,21 +91,10 @@ Let's exercise what we have learned.
 <Fragment slot="answer">
 
 1. To set status code to `418 I'm a teapot`, we can use `status` function.
-2. To redirect `/docs` to `https://next.elysiajs.com`, we can use `redirect` function.
+2. To redirect `/docs` to `https://next.elysiajs.com/`, we can use `redirect` function.
 3. To set a custom header `x-powered-by` to `Elysia`, we can use `set.headers` object.
 
-```typescript
-import { Elysia } from 'elysia'
-
-new Elysia()
-	.get('/', ({ status, set }) => {
-		set.headers['x-powered-by'] = 'Elysia'
-
-		return status(418, 'Hello Elysia!')
-	})
-	.get('/docs', ({ redirect }) => redirect('https://next.elysiajs.com/'))
-	.listen(3000)
-```
+<StepsAnswer />
 
 </Fragment>
 

@@ -3,7 +3,6 @@ title: "End-to-end type safety"
 description: "Elysia provides an end-to-end type safety between backend and frontend without code generation similar to tRPC, using Eden."
 ---
 
-import { IconCode } from '@tabler/icons-react';
 import Lesson from '../../../../components/tutorial/lesson.astro';
 import DocLink from '../../../../components/tutorial/doc-link.astro';
 
@@ -13,14 +12,19 @@ import DocLink from '../../../../components/tutorial/doc-link.astro';
 
 Elysia provides an end-to-end type safety between backend and frontend **without code generation** similar to tRPC, using <DocLink href="/eden/">Eden</DocLink>.
 
-```typescript
+```typescript title="index.ts"
 import { Elysia } from 'elysia'
-import { treaty } from '@elysia/eden'
 
 // Backend
 export const app = new Elysia()
 	.get('/', 'Hello Elysia!')
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
+```
+
+```typescript title="client.ts"
+import { treaty } from '@elysia/eden'
+import type { app } from './index'
 
 // Frontend
 const client = treaty<typeof app>('localhost:3000')
@@ -32,10 +36,16 @@ console.log(data) // Hello Elysia!
 
 This works by inferring the types from the Elysia instance, and uses type hints to provide type safety for the client.
 
+The frontend only imports the **type** of `app`, so no server code ends up in the client.
+
 See <DocLink href="/eden/treaty/overview/">Eden treaty</DocLink>.
 
 ## Assignment
 
-Let's click the <IconCode className="inline -translate-y-0.5" size={18} /> icon in the preview to see how's the request is logged.
+The playground has the server in `index.ts` and a client in `client.ts`. The client passes `app` itself to `treaty`, so it calls the server without a network request.
+
+Open `client.ts` and hover over `data` to see its type. Then change the response of `GET /` in `index.ts`, for example to an object, and hover over `data` again.
+
+Type `bun client.ts` in the playground's console to see the response.
 
 </Lesson>

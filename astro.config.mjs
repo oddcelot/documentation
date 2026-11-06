@@ -9,48 +9,12 @@ import runbun from '@runbun/astro'
 import remarkRunbun from '@runbun/astro/remark'
 
 import { createInlineSvgUrl } from 'expressive-code'
-import { fileURLToPath } from 'node:url'
 
 import { siteUrl } from './site.config.mjs'
 import { spicaTables } from './src/lib/spica-tables.mjs'
 import { lazyBlogImages } from './src/lib/lazy-blog-images.mjs'
 import { locales } from './src/lib/locales.mjs'
 import { spicaDark, spicaLight } from './src/spica/code-themes.mjs'
-
-// monaco-editor-auto-typings (tutorial playground) is CommonJS and requires Node's `path` in the
-// browser. Resolve bare `path` to a posix join/dirname shim for client code only; a global alias
-// would also reach Astro's server runtime (where path-browserify breaks `astro sync`).
-function browserPathShim() {
-	const shim = fileURLToPath(
-		new URL('./src/components/tutorial/path-shim.ts', import.meta.url)
-	)
-
-	/** @param {string} id */
-	const resolveId = (id) => (id === 'path' ? shim : null)
-
-	/** @type {import('vite').Plugin} */
-	const plugin = {
-		name: 'tutorial:browser-path-shim',
-		// Vite's own resolver externalizes `path` for the browser before normal plugins run, so
-		// the production bundle got a stub without join/dirname. Dev only worked via optimizeDeps.
-		enforce: 'pre',
-		config: () => ({
-			optimizeDeps: {
-				rolldownOptions: {
-					plugins: [{ name: 'tutorial:browser-path-shim', resolveId }]
-				}
-			}
-		}),
-		resolveId(id, _importer, options) {
-			const client = this.environment
-				? this.environment.config.consumer === 'client'
-				: !options?.ssr
-			return client ? resolveId(id) : null
-		}
-	}
-
-	return plugin
-}
 
 export default defineConfig({
 	site: siteUrl,
@@ -64,6 +28,7 @@ export default defineConfig({
 	},
 	integrations: [
 		runbun({
+			playgroundUrl: process.env.PUBLIC_RUNBUN_SRC,
 			fences: "all",
 			themes: [spicaLight, spicaDark],
 			themeSelector: ({ appearance }) => `:root[data-theme='${appearance}']`
@@ -363,7 +328,6 @@ export default defineConfig({
 	],
 	vite: {
 		optimizeDeps: {
-			exclude: ['@rollup/browser'],
 			// only imported once the assistant opens; found that late, dev re-optimizes and the page's import 504s
 			include: [
 				'marked',
@@ -375,6 +339,6 @@ export default defineConfig({
 				'shiki/langs/shellscript.mjs'
 			]
 		},
-		plugins: [tailwindcss(), browserPathShim()]
+		plugins: [tailwindcss()]
 	}
 })

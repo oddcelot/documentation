@@ -12,8 +12,11 @@ import Answer from './answer'
 import { dedupeCodeStyles } from '../../layouts/dedupeCodeStyles'
 import AsideHeader from './aside-header'
 import TaskList from './task-list'
-import Playground from './playground'
+import RunbunLesson from './runbun-lesson'
+import RunbunDefaults from '../playground/runbun-defaults.astro'
 import { findLesson } from './lessons'
+import { lessonDependencies, lessonSteps } from './steps'
+import { config } from 'virtual:@runbun/astro/config'
 import { ogImagePath } from '../../lib/og'
 
 interface Props {
@@ -32,18 +35,11 @@ const id =
 const fullTitle = `${title} - Elysia tutorial`
 const ogImage = new URL(ogImagePath(pageId), Astro.site)
 
-// Testcase predicates are functions, and Astro serialises island props as JSON — only the two
-// display strings may cross into the island. `playground.tsx` loads the executable module itself.
-const data = import.meta.glob<{
-	testcases?: { title: string; description: string }[]
-}>('/src/pages/tutorial/**/_data.ts', { eager: true })
-const rows = (
-	data[
-		id === 'index'
-			? '/src/pages/tutorial/_data.ts'
-			: `/src/pages/tutorial/${id}/_data.ts`
-	]?.testcases ?? []
-).map(({ title, description }) => ({ title, description }))
+const steps = lessonSteps(id)
+if (!steps) throw new Error(`${id} has no _steps`)
+const rows = steps
+	.flatMap(({ checks }) => checks)
+	.map(({ title, description }) => ({ title, description }))
 
 // Preserve the compiled Markdown and its Expressive Code assets.
 const content = dedupeCodeStyles(await Astro.slots.render('default'))
@@ -183,7 +179,9 @@ const answerHtml = answerLinks.reduce((html, link) => html.replace(link, ''), an
 				tabindex="-1"
 				class="flex min-h-0 min-w-0 flex-1 flex-col"
 			>
-				<Playground client:load lesson={id} />
+				<RunbunDefaults />
+				<script is:inline type="module" src={`${config.playgroundUrl.replace(/\/?$/, '/')}embed.js`}></script>
+				<RunbunLesson client:load lesson={id} src={config.playgroundUrl} dependencies={lessonDependencies(id)} steps={steps} />
 			</div>
 		</main>
 

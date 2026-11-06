@@ -5,6 +5,7 @@ description: "Learn how to handle errors in Elysia, including custom error handl
 
 import Lesson from '../../../../components/tutorial/lesson.astro';
 import DocLink from '../../../../components/tutorial/doc-link.astro';
+import StepsAnswer from '../../../../components/tutorial/steps-answer.astro';
 
 <Lesson title={frontmatter.title} description={frontmatter.description} doc="/patterns/error-handling/">
 
@@ -17,7 +18,7 @@ It accepts context similar to a handler, with an `error` property containing the
 ```typescript
 import { Elysia, NotFound } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.onError(({ error, status }) => {
 		if(error instanceof NotFound)
 			return 'uhe~ are you lost?'
@@ -25,7 +26,8 @@ new Elysia()
 		return status(418, "My bad! But I'm cute so you'll forgive me, right?")
 	})
 	.get('/', () => 'ok')
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 You can return a <DocLink href="/essential/handler/#status">status</DocLink> to override the default error status.
@@ -34,7 +36,7 @@ You can return a <DocLink href="/essential/handler/#status">status</DocLink> to 
 
 Register an error class with `.onError(ErrorClass, handler)` to handle that type:
 
-```typescript ins={10-12}
+```typescript ins={10-15}
 import { Elysia } from 'elysia'
 
 class NicheError extends Error {
@@ -43,7 +45,7 @@ class NicheError extends Error {
 	}
 }
 
-new Elysia()
+export const app = new Elysia()
 	.onError(NicheError, ({ error, status }) => {
 		// Typed as NicheError
 		console.log(error)
@@ -53,7 +55,8 @@ new Elysia()
 	.get('/', () => {
         throw new NicheError('Custom error message')
 	})
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 The handler receives an error typed as `NicheError`, so its properties are available with autocomplete.
@@ -86,45 +89,29 @@ class NicheError extends Error {
 	status = 418
 }
 
-new Elysia()
+export const app = new Elysia()
 	.onError(NicheError, ({ error, status }) =>
 		status(error.status, { message: error.message })
 	)
 	.get('/', () => {
 		throw new NicheError('Custom error message')
 	})
+
+if (import.meta.main) app.listen(3000)
 ```
 
 See <DocLink href="/patterns/error-handling/#third-party-errors">Class error handlers</DocLink>.
 
 ## Assignment
 
-Let's try to extend Elysia's context.
+Let's replace Elysia's default error responses with your own.
 
 <Fragment slot="answer">
 
 1. Handle the `NotFound` class to override the 404 response.
-2. Handle `YourError` and return its 418 status.
+2. Give `YourError` a `status = 418` property and throw it from GET "/". The status property alone already sets 418; the class handler chooses the body.
 
-```typescript
-import { Elysia, NotFound } from 'elysia'
-
-class YourError extends Error {
-	status = 418
-
-	constructor(message: string) {
-		super(message)
-	}
-}
-
-new Elysia()
-	.onError(NotFound, () => 'Hi there')
-	.onError(YourError, ({ error, status }) => status(error.status, error.message))
-	.get('/', () => {
-		throw new YourError("A")
-	})
-	.listen(3000)
-```
+<StepsAnswer />
 
 </Fragment>
 

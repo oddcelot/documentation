@@ -1,6 +1,7 @@
 ---
 // Page-wide defaults for every <bun-playground> (the ```ts playground fences of @runbun/astro), rendered once per page
 // by the docs layout. A fence still overrides any of these with its own meta.
+import { config } from 'virtual:@runbun/astro/config'
 ---
 
 <bun-playground-defaults
@@ -11,7 +12,7 @@
 	layout="stack"
 	family="elysia-light"
 	fonts="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..600;1,400&display=swap"
-	src="https://runbun.dev"
+	src={config.playgroundUrl}
 ></bun-playground-defaults>
 
 <script is:inline>

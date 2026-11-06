@@ -3,9 +3,9 @@ title: "Handler and context"
 description: "Handler is a resource or a route function to send data back to client. Context contains information about each request."
 ---
 
-import { IconSettings } from '@tabler/icons-react';
 import Lesson from '../../../../components/tutorial/lesson.astro';
 import DocLink from '../../../../components/tutorial/doc-link.astro';
+import StepsAnswer from '../../../../components/tutorial/steps-answer.astro';
 
 <Lesson title={frontmatter.title} description={frontmatter.description} doc="/essential/handler/#context">
 
@@ -16,10 +16,11 @@ import DocLink from '../../../../components/tutorial/doc-link.astro';
 ```ts
 import { Elysia } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
     // `() => 'hello world'` is a handler
     .get('/', () => 'hello world')
-    .listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 A handler can also be a literal value, see <DocLink href="/essential/handler/">Handler</DocLink>
@@ -27,10 +28,11 @@ A handler can also be a literal value, see <DocLink href="/essential/handler/">H
 ```ts
 import { Elysia } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
     // `'hello world'` is a handler
     .get('/', 'hello world')
-    .listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 Using an inline value can be useful for static resources like **files**.
@@ -42,9 +44,11 @@ Contains information about each request. It is passed as the only argument of a 
 ```typescript
 import { Elysia } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.get('/', (context) => context.path)
             // ^ This is a context
+
+if (import.meta.main) app.listen(3000)
 ```
 
 **Context** stores information about the request like:
@@ -55,38 +59,16 @@ new Elysia()
 
 See <DocLink href="/essential/handler/#context">Context</DocLink>.
 
-## Preview
-
-You can preview the result by looking under the **editor** section.
-
-There should be a tiny navigator on the **top left** of the preview window.
-
-You can use it to switch between path and method to see the response.
-
-You can also click <IconSettings className="inline -translate-y-0.5" size={18} stroke={2} /> to edit body, and headers.
-
 ## Assignment
 
-Let's try extracting context parameters:
+Let's try extracting context parameters.
 
 <Fragment slot="answer">
 
 1. We can extract `body`, `query`, and `headers` from the first parameter of a callback function.
 2. We can then return them like `{ body, query, headers }`.
 
-```typescript
-import { Elysia } from 'elysia'
-
-new Elysia()
-	.post('/', ({ body, query, headers }) => {
-		return {
-			query,
-			body,
-			headers
-		}
-	})
-	.listen(3000)
-```
+<StepsAnswer />
 
 </Fragment>
 

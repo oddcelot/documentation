@@ -5,6 +5,7 @@ description: "Lifecycle hooks are functions that are executed on a specific even
 
 import Lesson from '../../../../components/tutorial/lesson.astro';
 import DocLink from '../../../../components/tutorial/doc-link.astro';
+import StepsAnswer from '../../../../components/tutorial/steps-answer.astro';
 
 <Lesson title={frontmatter.title} description={frontmatter.description} doc="/essential/life-cycle/">
 
@@ -25,7 +26,7 @@ To register a lifecycle hook, you can pass it in the second argument of a route 
 ```typescript
 import { Elysia } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.get('/1', () => 'Hello Elysia!')
 	.get('/auth', {
 		beforeHandle({ request, status }) {
@@ -40,6 +41,8 @@ new Elysia()
 		return 'Oh you are lucky!'
 	})
 	.get('/2', () => 'Hello Elysia!')
+
+if (import.meta.main) app.listen(3000)
 ```
 
 Here we use `status(418)` which is the "I'm a teapot" status code. You can also use the string name directly: `status("I'm a teapot")`. See <DocLink href="/essential/handler/#status">Status</DocLink> for more on using status codes.
@@ -69,7 +72,7 @@ To use a local hook, you can inline hook into a route handler:
 // Similar to previous code snippet
 import { Elysia } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.get('/1', () => 'Hello Elysia!')
 	.get('/auth', {
 		// This is a Local Hook
@@ -85,6 +88,8 @@ new Elysia()
 		return 'Oh you are lucky!'
 	})
 	.get('/2', () => 'Hello Elysia!')
+
+if (import.meta.main) app.listen(3000)
 ```
 
 ## Interceptor hook
@@ -96,7 +101,7 @@ To add an interceptor hook, call the lifecycle method, such as `.onBeforeHandle(
 ```typescript
 import { Elysia } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.get('/1', () => 'Hello Elysia!')
 	.onBeforeHandle(({ request, status }) => {
 		console.log('This is executed before handler')
@@ -112,6 +117,8 @@ new Elysia()
 	})
 	// "beforeHandle" is also applied
 	.get('/2', () => 'Hello Elysia!')
+
+if (import.meta.main) app.listen(3000)
 ```
 
 Unlike Local Hook, Interceptor Hook will add the hook to every route that came after the hook is registered.
@@ -124,21 +131,7 @@ Let's put 2 types of hooks into practice.
 
 We can use `beforeHandle` to intercept the request before it reaches the handler, and return a response with `status` method.
 
-```typescript
-import { Elysia } from 'elysia'
-
-new Elysia()
-	.onBeforeHandle(({ query: { name }, status }) => {
-		if(!name) return status(401)
-	})
-	.get('/auth', ({ query: { name = 'anon' } }) => {
-		return `Hello ${name}!`
-	})
-	.get('/profile', ({ query: { name = 'anon' } }) => {
-		return `Hello ${name}!`
-	})
-	.listen(3000)
-```
+<StepsAnswer />
 
 </Fragment>
 

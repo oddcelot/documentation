@@ -5,6 +5,7 @@ description: "Learn how to use merged guard schemas in Elysia to define reusable
 
 import Lesson from '../../../../components/tutorial/lesson.astro';
 import DocLink from '../../../../components/tutorial/doc-link.astro';
+import StepsAnswer from '../../../../components/tutorial/steps-answer.astro';
 
 <Lesson title={frontmatter.title} description={frontmatter.description} doc="/essential/validation/">
 
@@ -15,7 +16,7 @@ When we define a schema using <DocLink href="/essential/validation/#guard">Guard
 ```typescript
 import { Elysia, t } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.guard({
 		body: t.Object({
 			age: t.Number()
@@ -30,7 +31,8 @@ new Elysia()
 			})
 		}, ({ body }) => body
 	)
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 If we want a schema to **co-exist** with route schema, we can define it as **merged guard schema**:
@@ -38,7 +40,7 @@ If we want a schema to **co-exist** with route schema, we can define it as **mer
 ```typescript ins={5}
 import { Elysia, t } from 'elysia'
 
-new Elysia()
+export const app = new Elysia()
 	.guard({
 		schema: 'merge',
 		body: t.Object({
@@ -54,7 +56,8 @@ new Elysia()
 			})
 		}, ({ body }) => body
 	)
-	.listen(3000)
+
+if (import.meta.main) app.listen(3000)
 ```
 
 ## Schema library interoperability
@@ -71,27 +74,7 @@ Let's make both `age` and `name` properties required in the request body by usin
 
 We can define a merged guard schema by adding `schema: 'merge'` in the guard options.
 
-```typescript ins={6}
-import { Elysia, t } from 'elysia'
-import { z } from 'zod'
-
-new Elysia()
-	.guard({
-		schema: 'merge',
-		body: z.object({
-			age: z.number()
-		})
-	})
-	.post(
-		'/user',
-		{
-			body: t.Object({
-				name: t.String()
-			})
-		}, ({ body }) => body
-	)
-	.listen(3000)
-```
+<StepsAnswer />
 
 </Fragment>
 

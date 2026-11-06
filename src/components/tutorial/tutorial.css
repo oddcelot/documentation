@@ -22,11 +22,15 @@
 	}
 }
 
-/* 15px prose, as in the Vue playground: the doc pane is a third of the viewport, not a full page. */
+/* 14px prose: the doc pane is a third of the viewport, not a full page. */
 [data-tutorial-task] .sl-markdown-content {
-	font-size: 0.9375rem;
+	font-size: 0.875rem;
 	line-height: 1.65;
 	color: var(--color-ink-soft);
+}
+
+[data-tutorial-task] .sl-markdown-content :is(figure.runbun-code, .runbun-tabs, bun-playground) {
+	--runbun-code-size: 0.8125rem;
 }
 
 [data-tutorial-task] .sl-markdown-content :is(h1, h2, h3, h4, h5, h6) {
@@ -126,12 +130,6 @@
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-@media (prefers-reduced-motion: reduce) {
-	body[data-tutorial] .monaco-editor .cursors-layer.cursor-smooth-caret-animation > .cursor {
-		transition: none;
-	}
-}
-
 /* Keyboard tab changes should land immediately, including the moving indicator. */
 body[data-tutorial] [role='tablist']:has(:focus-visible) * {
 	transition: none;
@@ -153,16 +151,12 @@ body[data-tutorial] [role='tablist']:has(:focus-visible) * {
 	}
 }
 
-body[data-tutorial] [aria-label='Code editor'] .line-numbers {
-	font-size: 12px;
-}
-
-/* Monaco's input is a proxy for the editor; keep widget and toolbar focus indicators. */
-body[data-tutorial] [aria-label='Code editor'] :is(.native-edit-context:focus, textarea.inputarea:focus) {
-	outline: none;
-}
-
 
 .tutorial-answer:has(button:focus-visible) .tutorial-answer-panel {
 	transition: none;
+}
+
+.tutorial-embed > bun-playground {
+	margin: 0;
+	box-shadow: none;
 }
