@@ -49,14 +49,13 @@ export default function TaskList({ testcases }: { testcases: TaskRow[] }) {
 		const timer = setTimeout(() => {
 			const element = section.current;
 			if (!element || document.visibilityState === 'hidden' || !element.getClientRects().length || getComputedStyle(element).visibility !== 'visible') return;
-			const bounds = element.getBoundingClientRect();
-			const pane = element.closest('[data-tutorial-task]')?.getBoundingClientRect();
-			const left = Math.max(0, bounds.left, pane?.left ?? 0);
-			const right = Math.min(innerWidth, bounds.right, pane?.right ?? innerWidth);
-			const top = Math.max(0, bounds.top, pane?.top ?? 0);
-			const bottom = Math.min(innerHeight, bounds.bottom, pane?.bottom ?? innerHeight);
+			const pane = (element.closest('[data-tutorial-task]') ?? element).getBoundingClientRect();
+			const left = Math.max(0, pane.left);
+			const right = Math.min(innerWidth, pane.right);
+			const top = Math.max(0, pane.top);
+			const bottom = Math.min(innerHeight, pane.bottom);
 			if (right <= left || bottom <= top) return;
-			setEmitter({ x: (left + right) / 2, y: bottom, width: innerWidth, height: Math.max(1, innerHeight - bottom) });
+			setEmitter({ x: (left + right) / 2, y: top, width: right - left, height: bottom - top });
 			expiry = setTimeout(() => setEmitter(null), 2500);
 		}, 400);
 		return () => { clearTimeout(timer); clearTimeout(expiry); };
