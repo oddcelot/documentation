@@ -58,7 +58,7 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 			src,
 			load: 'eager',
 			mode: 'full',
-			features: 'types,-git,-run',
+			features: 'types,-git,-run,-console',
 			layout: 'stack',
 			expand: 'false',
 			autorun: 'true',
@@ -137,7 +137,7 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 		const userFiles = async () => {
 			const project: Record<string, string> = {};
 			for (const path of (await el.listFiles()).map(bare))
-				if (!(path in generated) && !path.startsWith('.tutorial/')) project[path] = await el.readFile(path);
+				if (!(path in generated) && path !== 'bun.lock' && !path.startsWith('.tutorial/')) project[path] = await el.readFile(path);
 			return project;
 		};
 
