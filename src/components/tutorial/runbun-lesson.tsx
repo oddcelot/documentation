@@ -4,12 +4,12 @@ import { tutorialStore } from './store';
 
 interface Embed extends HTMLElement {
 	ready: Promise<void>;
-	test(files?: string[]): Promise<{ failed: number; results?: { file: string; failed: number }[] }>;
+	test(files?: string[]): Promise<{ failed: number; results: { file: string; failed: number }[] }>;
 	readFile(path: string): Promise<string>;
 	writeFile(path: string, text: string): Promise<void>;
 	listFiles(): Promise<string[]>;
 	openFile(path: string): Promise<void>;
-	removeFile?(path: string): Promise<void>;
+	removeFile(path: string): Promise<void>;
 }
 
 const bare = (path: string) => path.replace(/^\.?\//, '');
@@ -18,12 +18,6 @@ const same = (a: string, b: string) => a.trimEnd() === b.trimEnd();
 const sameProject = (project: Record<string, string>, files: Record<string, string>) =>
 	Object.keys(project).length === Object.keys(files).length &&
 	Object.entries(files).every(([path, text]) => project[path] !== undefined && same(project[path], text));
-
-// Host and program writes are not the reader's; a change without `by` predates it and is the reader's.
-export const regrades = ({ path, by = 'reader' }: { path: string; by?: string }, generated: Record<string, string>) => {
-	const file = bare(path);
-	return by === 'reader' && !(file in generated) && !file.startsWith('.tutorial/');
-};
 
 const wrapper = (slug: string) => `import * as bun from 'bun:test'
 import check from './checks/${slug}'
@@ -56,7 +50,7 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 			src,
 			load: 'eager',
 			mode: 'full',
-			features: 'types',
+			features: 'types,-git',
 			layout: 'stack',
 			expand: 'false',
 			autorun: 'true',
@@ -87,8 +81,6 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 		let running = false;
 		let again = false;
 		let generation = 0;
-		let hasResults = false;
-		let perFile = false;
 		let writing = 0;
 		let timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -102,24 +94,10 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 			}
 		};
 
-		const runChecks = async (started: number): Promise<boolean[]> => {
-			if (!perFile) {
-				const reply = await el.test(tests);
-				if (Array.isArray(reply?.results)) {
-					hasResults = true;
-					const failed = new Map(reply.results.map((result) => [bare(result.file), result.failed]));
-					return tests.map((test) => failed.get(test) === 0);
-				}
-				if (hasResults) return tests.map(() => false);
-				if (tests.length === 1) return [reply.failed === 0];
-				perFile = true;
-			}
-			const results: boolean[] = [];
-			for (const test of tests) {
-				if (generation !== started || disposed) break;
-				results.push((await el.test([test])).failed === 0);
-			}
-			return results;
+		const runChecks = async (): Promise<boolean[]> => {
+			const { results } = await el.test(tests);
+			const failed = new Map(results.map((result) => [bare(result.file), result.failed]));
+			return tests.map((test) => failed.get(test) === 0);
 		};
 
 		// Never overlaps test() calls. A run stores nothing if the files changed since it started; that change has queued another grade.
@@ -136,7 +114,7 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 					const started = generation;
 					let results: boolean[];
 					try {
-						results = await runChecks(started);
+						results = await runChecks();
 					} catch (error) {
 						console.error(error);
 						results = tests.map(() => false);
@@ -159,8 +137,9 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 			isUnsupported = true;
 			setUnsupported(true);
 		};
+		// Host and program writes aren't the reader's code.
 		const onChange = (event: Event) => {
-			if (writing || !regrades((event as CustomEvent<{ path: string; by?: string }>).detail, generated)) return;
+			if (writing || (event as CustomEvent<{ by: string }>).detail.by !== 'reader') return;
 			generation++;
 			clearTimeout(timer);
 			timer = setTimeout(grade, 800);
@@ -172,14 +151,13 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 			try {
 				await write(async () => {
 					for (const [path, text] of Object.entries(step.files)) await el.writeFile(path, text);
-					if (typeof el.removeFile === 'function')
-						for (const path of Object.keys(project))
-							if (!(path in step.files))
-								try {
-									await el.removeFile(path);
-								} catch (error) {
-									console.error(error);
-								}
+					for (const path of Object.keys(project))
+						if (!(path in step.files))
+							try {
+								await el.removeFile(path);
+							} catch (error) {
+								console.error(error);
+							}
 				});
 			} finally {
 				await el.openFile('index.ts').catch(console.error);
@@ -201,13 +179,6 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 			await customElements.whenDefined('bun-playground');
 			await el.ready;
 			if (disposed || isUnsupported) return;
-			// An embed without `generated` restores a persisted project over the generated files.
-			await write(async () => {
-				for (const [path, text] of Object.entries(generated)) {
-					const current = await el.readFile(path).catch(() => undefined);
-					if (current === undefined || !same(current, text)) await el.writeFile(path, text);
-				}
-			});
 			await grade();
 		})();
 
