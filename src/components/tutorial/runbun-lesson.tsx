@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { AlertDialog } from '@base-ui/react/alert-dialog';
+import { Button } from '../ui/button';
 import type { Step } from './steps';
 import { tutorialStore } from './store';
 
@@ -32,6 +34,12 @@ bun.test(${JSON.stringify(slug)}, async () => {
 export default function RunbunLesson({ lesson, src, dependencies, steps }: { lesson: string; src: string; dependencies: Record<string, string>; steps: Step[] }) {
 	const host = useRef<HTMLDivElement>(null);
 	const [unsupported, setUnsupported] = useState(false);
+	const [confirming, setConfirming] = useState<((ok: boolean) => void) | null>(null);
+	const confirmReplace = () => new Promise<boolean>((resolve) => setConfirming(() => resolve));
+	const answer = (ok: boolean) => {
+		confirming?.(ok);
+		setConfirming(null);
+	};
 
 	useEffect(() => {
 		const checks = steps.flatMap((step) => step.checks);
@@ -50,7 +58,7 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 			src,
 			load: 'eager',
 			mode: 'full',
-			features: 'types,-git',
+			features: 'types,-git,-run',
 			layout: 'stack',
 			expand: 'false',
 			autorun: 'true',
@@ -144,15 +152,16 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 			clearTimeout(timer);
 			timer = setTimeout(grade, 800);
 		};
-		const useSolution = async (step: Step) => {
+		// Asks first unless the reader's code is still one of the lesson's snapshots.
+		const useSolution = async ({ files }: Step) => {
 			await el.ready;
 			const project = await userFiles();
-			if (!steps.some(({ files }) => sameProject(project, files)) && !confirm('Replace your code with this solution? Your changes will be lost.')) return;
+			if (!steps.some((step) => sameProject(project, step.files)) && !(await confirmReplace())) return;
 			try {
 				await write(async () => {
-					for (const [path, text] of Object.entries(step.files)) await el.writeFile(path, text);
+					for (const [path, text] of Object.entries(files)) await el.writeFile(path, text);
 					for (const path of Object.keys(project))
-						if (!(path in step.files))
+						if (!(path in files))
 							try {
 								await el.removeFile(path);
 							} catch (error) {
@@ -199,6 +208,21 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 				</p>
 			)}
 			<div ref={host} className="tutorial-embed min-h-0 flex-1 overflow-hidden rounded-2xl border border-border-strong bg-base" />
+			<AlertDialog.Root open={!!confirming} onOpenChange={(open) => !open && answer(false)}>
+				<AlertDialog.Portal>
+					<AlertDialog.Backdrop className="fixed inset-0 bg-[color-mix(in_oklch,var(--color-night)_20%,transparent)] transition-opacity duration-(--dur-base) ease-out data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 motion-reduce:transition-none" />
+					<AlertDialog.Popup className="spica-surface fixed top-1/2 left-1/2 box-border w-[min(26rem,calc(100%_-_2rem))] -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-solid border-border-strong bg-glass p-5 text-ink shadow-lg [backdrop-filter:var(--glass-blur-small)] transition-[opacity,scale] duration-(--dur-base) ease-out light:bg-surface/85 data-[starting-style]:scale-[0.96] data-[starting-style]:opacity-0 data-[ending-style]:scale-[0.96] data-[ending-style]:opacity-0 motion-reduce:transition-none">
+						<AlertDialog.Title className="m-0 font-display text-[1.375rem] leading-[1.15] font-normal">Replace your code?</AlertDialog.Title>
+						<AlertDialog.Description className="mt-2 mb-0 text-sm leading-[1.65] text-ink-soft">
+							The solution replaces what you wrote in this lesson. Your changes can't be brought back.
+						</AlertDialog.Description>
+						<div className="mt-5 flex justify-end gap-2">
+							<AlertDialog.Close render={<Button variant="ghost" size="sm" />}>Keep my code</AlertDialog.Close>
+							<Button size="sm" onClick={() => answer(true)}>Use solution</Button>
+						</div>
+					</AlertDialog.Popup>
+				</AlertDialog.Portal>
+			</AlertDialog.Root>
 		</div>
 	);
 }
