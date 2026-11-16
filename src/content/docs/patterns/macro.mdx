@@ -8,23 +8,6 @@ import '../../../styles/routing.css';
 import InteractiveDocLayout from '../../../components/interactive-code/layout.astro';
 import InteractiveDoc from '../../../components/interactive-code/doc.astro';
 import InteractiveStep from '../../../components/interactive-code/step.astro';
-import CodePlayground from '../../../components/playground/code.astro';
-import { Elysia, t } from 'elysia';
-
-export const wrapMacroSchema = (payload) =>
-    t.Object({
-        code: t.Number(),
-        data: t.Union([payload ?? t.Null(), t.Null()])
-    });
-
-export const macroSchemaDemo = new Elysia()
-    .macro({
-        res: (payload) => ({
-            response: wrapMacroSchema(payload)
-        })
-    })
-    .get('/count', { res: t.Number() }, () => ({ code: 0, data: 1 }))
-    .get('/name', { res: t.String() }, () => ({ code: 0, data: 'Elysia' }));
 
 export const steps = [
     {
@@ -382,9 +365,7 @@ Without a type lambda, TypeScript evaluates a generic macro's return at the `Any
 
 Use a type lambda to apply the route's macro value:
 
-<CodePlayground elysia={macroSchemaDemo}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET /count => {"code":0,"data":1}; GET /name => {"code":0,"data":"Elysia"}'
 import { Elysia, macroType, t, type AnySchema, type MacroTypeLambda } from 'elysia'
 
 const wrap = <T extends AnySchema>(payload?: T) =>
@@ -406,9 +387,8 @@ new Elysia()
     })
     .get('/count', { res: t.Number() }, () => ({ code: 0, data: 1 }))
     .get('/name', { res: t.String() }, () => ({ code: 0, data: 'Elysia' }))
+    .listen(3000)
 ```
-
-</CodePlayground>
 
 This enforce the response type from macro.
 

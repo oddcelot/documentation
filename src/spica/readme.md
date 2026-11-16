@@ -52,7 +52,7 @@ These Astro components live in [`../components/interactive-code/`](../components
 | --- | --- |
 | A standalone snippet or API reference | A fenced code block with a language, usually `ts` |
 | An example that changes as the explanation progresses | `InteractiveDocLayout`, `InteractiveDoc`, and `InteractiveStep` |
-| Routes whose responses readers can inspect | `CodePlayground` around a fenced code block |
+| Routes whose responses readers can inspect | A `playground` fence with `requests=` |
 
 #### Interactive explanations
 
@@ -135,21 +135,10 @@ See [`doc.astro`](../components/interactive-code/doc.astro), [`step.astro`](../c
 
 #### Route playgrounds
 
-`CodePlayground` shows source code with a route selector and response. The selector sits in a browser-style tab above a scrollable response panel with a soft iris wash. A thin border follows the tab and panel, leaving the rest of the header open. Its source code omits the outer frame inside the playground card; standalone Markdown fences keep theirs. Pass an exported Elysia instance through `elysia` and place the displayed code in its default slot. The instance must register at least one route.
-
-This MDX fragment uses the same routes and return values in both places:
+A `playground` fence with `mode=preview` and `requests=` shows source code with one tab per preset request. Before Run, each tab shows the response written after ` => `; after Run, the tabs send the requests to the live server. The code must `.listen(3000)`.
 
 ````mdx
-import { Elysia } from 'elysia';
-import CodePlayground from '../../../components/playground/code.astro';
-
-export const demo = new Elysia()
-    .get('/', 'Hello Elysia')
-    .get('/hi', 'Hello!');
-
-<CodePlayground elysia={demo}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET / => Hello Elysia; GET /hi => Hello!'
 import { Elysia } from 'elysia'
 
 new Elysia()
@@ -157,22 +146,9 @@ new Elysia()
     .get('/hi', 'Hello!')
     .listen(3000)
 ```
-
-</CodePlayground>
 ````
 
-The displayed `.listen(3000)` tells readers how to start their own local server. Never call `.listen()` on the exported demo instance. The playground prepares response text while Astro renders the page, then switches between those saved responses in the browser. It does not execute edits or send live requests.
-
-Use `examples={[{ method: 'POST', displayPath: '/body — valid name', response: '{"name":"Elysia"}' }]}` instead of `elysia` for saved request/response examples. This supports several inputs for the same route without executing an app during rendering. Verify these responses against the displayed code and describe them as saved examples, not live requests. Provide at least one example.
-
-When using `elysia`, optional props let you supply a response and a readable route label:
-
-- `mock` maps the registered path to an exact HTTP method and response string, for example `mock={{ '/user/:id': { GET: '42' } }}`. Use it for deterministic examples or handlers that require request data or external services.
-- `alias` maps the registered path to a display label only, for example `alias={{ '/user/:id': '/user/42' }}`. It does not substitute parameters or change the request. Without a mock, the helper calls `elysia.handle()` with the literal registered path and method, with no body.
-- For those props, the demo must register `/user/:id` and the displayed handler should return `params.id`. Use the mock and alias together to illustrate `/user/42` returning `42`.
-- Keep demo handlers safe to run during page rendering. Make mocked responses explicit when describing the example; do not imply that the reader has made a live request.
-
-See [`code.astro`](../components/playground/code.astro) and [`prepare-playground-routes.ts`](../components/playground/prepare-playground-routes.ts) for prop types and response preparation.
+Copy each response from a real run of the displayed code; the written response isn't checked against it. See [Preset requests](../content/docs/code-blocks.mdx) for the request syntax.
 
 ### Page navigation
 

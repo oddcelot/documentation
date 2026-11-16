@@ -3,38 +3,9 @@ title: "Encapsulation"
 description: "Elysia hooks are encapsulated to its own instance only. If you create a new instance, it will not share hooks with other instances."
 ---
 
-import { Elysia } from 'elysia';
 import Lesson from '../../../../components/tutorial/lesson.astro';
 import DocLink from '../../../../components/tutorial/doc-link.astro';
-import Playground from '../../../../components/playground/runner.astro';
 import StepsAnswer from '../../../../components/tutorial/steps-answer.astro';
-
-export const profile1 = new Elysia()
-	.onBeforeHandle(
-		({ query: { name }, status }) => {
-			if(!name)
-				return status(401)
-		}
-	)
-	.get('/profile', () => 'Hi!')
-
-export const demo1 = new Elysia()
-	.use(profile1)
-	.patch('/rename', () => 'Ok! XD')
-
-export const profile2 = new Elysia()
-	.onBeforeHandle(
-		'plugin',
-		({ query: { name }, status }) => {
-			if(!name)
-				return status(401)
-		}
-	)
-	.get('/profile', () => 'Hi!')
-
-export const demo2 = new Elysia()
-	.use(profile2)
-	.patch('/rename', () => 'Ok! XD')
 
 <Lesson title={frontmatter.title} description={frontmatter.description} doc="/essential/plugin/#scope">
 
@@ -44,7 +15,7 @@ Elysia hooks are **encapsulated** to its own instance only.
 
 If you create a new instance, it will not share hooks with other instances.
 
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET /profile => Unauthorized; PATCH /rename => Ok! XD'
 import { Elysia } from 'elysia'
 
 const profile = new Elysia()
@@ -63,9 +34,7 @@ export const app = new Elysia()
 if (import.meta.main) app.listen(3000)
 ```
 
-<Playground elysia={demo1} />
-
-> Try changing the path in the URL bar to **/rename** and see the result
+> Open the **/rename** tab and see the result
 
 <br />
 
@@ -102,7 +71,25 @@ const app = new Elysia()
 	.patch('/rename', ({ body }) => updateProfile(body))
 ```
 
-<Playground elysia={demo2} />
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET /profile => Unauthorized; PATCH /rename => Unauthorized'
+import { Elysia } from 'elysia'
+
+const profile = new Elysia()
+	.onBeforeHandle(
+		'plugin',
+		({ query: { name }, status }) => {
+			if(!name)
+				return status(401)
+		}
+	)
+	.get('/profile', () => 'Hi!')
+
+export const app = new Elysia()
+	.use(profile)
+	.patch('/rename', () => 'Ok! XD')
+
+if (import.meta.main) app.listen(3000)
+```
 
 Casting lifecycle to **"plugin"** will export lifecycle to **parent instance**.
 While **"global"** will export lifecycle to **all instances** that has a plugin.

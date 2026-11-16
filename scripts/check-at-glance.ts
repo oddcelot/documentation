@@ -23,7 +23,7 @@ assert(
 	select('.expressive-code span[style*="--0:"]', page),
 	'Code must retain highlighted tokens.'
 )
-assert.equal(selectAll('.code-playground', page).length, 2)
+assert.equal(selectAll('.runbun-requests', page).length, 2)
 assert.equal(
 	select('[data-interactive-doc]', page),
 	undefined,

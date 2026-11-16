@@ -4,35 +4,9 @@ description: Read a request and choose what to send back with an Elysia handler.
 template: splash
 ---
 
-import { Elysia } from 'elysia';
 import InteractiveDocLayout from '../../../components/interactive-code/layout.astro';
 import InteractiveDoc from '../../../components/interactive-code/doc.astro';
 import InteractiveStep from '../../../components/interactive-code/step.astro';
-import CodePlayground from '../../../components/playground/code.astro';
-
-export const responseDemo = new Elysia()
-    .get('/', 'Hello Elysia')
-    .get('/path', ({ path }) => path)
-    .get('/teapot', ({ status }) => status(418, 'I am a teapot'));
-
-export const extendContextDemo = new Elysia()
-    .state('tea', 'Earl Grey')
-    .decorate('greet', (name) => `Hello ${name}`)
-    .derive(({ query }) => ({ name: query.name ?? 'friend' }))
-    .get('/', ({ store, greet, name }) => ({
-        greeting: greet(name),
-        tea: store.tea
-    }));
-
-export const extendContextExamples = await Promise.all(
-    ['/', '/?name=Nagisa'].map(async (path) => ({
-        method: 'GET',
-        displayPath: path,
-        response: await (await extendContextDemo.handle(
-            new Request(`http://elysiajs.com${path}`)
-        )).text()
-    }))
-);
 
 export const steps = [
     {
@@ -143,11 +117,9 @@ A literal handler gives Elysia a response to prepare ahead of time. Lifecycle ho
 
 ## Inspect a response
 
-Pick a route below to see its response body. `/path` returns its own pathname, and `/teapot` returns `I am a teapot` with HTTP status `418`.
+Open a tab below to see its response body. `/path` returns its own pathname, and `/teapot` returns `I am a teapot` with HTTP status `418`.
 
-<CodePlayground elysia={responseDemo}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET / => Hello Elysia; GET /path => /path; GET /teapot => I am a teapot'
 import { Elysia } from 'elysia'
 
 new Elysia()
@@ -157,9 +129,7 @@ new Elysia()
     .listen(3000)
 ```
 
-</CodePlayground>
-
-The panel shows the body only. To inspect status codes and headers too, run the example locally and request `http://localhost:3000/teapot` with your HTTP client.
+Before Run, the tabs show the body only. Run the example to see the status code and headers too.
 
 ## Context
 
@@ -472,9 +442,7 @@ Add your own values when your handlers need more than the built-in fields.
 | `.decorate()` | Shared helpers or services you can read from context. |
 | `.derive()` | Values computed for each request before the handler runs. |
 
-<CodePlayground examples={extendContextExamples}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET / => {"greeting":"Hello friend","tea":"Earl Grey"}; GET /?name=Nagisa => {"greeting":"Hello Nagisa","tea":"Earl Grey"}'
 import { Elysia } from 'elysia'
 
 new Elysia()
@@ -487,8 +455,6 @@ new Elysia()
     }))
     .listen(3000)
 ```
-
-</CodePlayground>
 
 Visiting `/?name=Nagisa` returns a greeting of `Hello Nagisa` and the shared tea value, `Earl Grey`.
 

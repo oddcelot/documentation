@@ -4,28 +4,14 @@ description: Split an Elysia app into reusable plugins, declare dependencies, an
 template: splash
 ---
 
-import { Elysia } from 'elysia';
 import '../../../styles/routing.css';
 import { NumberedCards } from '../../../components/ui/numbered-cards';
 import InteractiveDocLayout from '../../../components/interactive-code/layout.astro';
 import InteractiveDoc from '../../../components/interactive-code/doc.astro';
 import InteractiveStep from '../../../components/interactive-code/step.astro';
-import CodePlayground from '../../../components/playground/code.astro';
 import { DependencyStory } from '../../../components/plugin-tree/dependency';
 import { DeduplicationStory } from '../../../components/plugin-tree/deduplication';
 import { ScopeStory } from '../../../components/plugin-tree/scope';
-
-export const pluginDemo = new Elysia()
-    .use(new Elysia()
-        .decorate('plugin', 'hi')
-        .get('/plugin', ({ plugin }) => plugin))
-    .get('/', ({ plugin }) => plugin);
-
-export const callbackDemo = new Elysia()
-    .use((app) => app
-        .state('counter', 0)
-        .get('/plugin', () => 'Hi'))
-    .get('/counter', ({ store: { counter } }) => counter);
 
 export const scopeSteps = [
     {
@@ -115,11 +101,9 @@ Let's put a small app inside another one.
 
 <div class="content-layout">
 
-Here, the plugin decorates a `plugin` property, and both the plugin and the main app read it. Choose either route to see its response.
+Here, the plugin decorates a `plugin` property, and both the plugin and the main app read it. Open either tab to see its response.
 
-<CodePlayground elysia={pluginDemo}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET /plugin => hi; GET / => hi'
 import { Elysia } from 'elysia'
 
 const plugin = new Elysia()
@@ -131,8 +115,6 @@ const app = new Elysia()
     .get('/', ({ plugin }) => plugin)
     .listen(3000)
 ```
-
-</CodePlayground>
 
 ## Dependency
 
@@ -323,9 +305,7 @@ Prefer a new plugin instance when you can. Functional callbacks receive the main
 
 To define one, write a function that accepts Elysia and returns the extended instance.
 
-<CodePlayground elysia={callbackDemo}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET /plugin => Hi; GET /counter => 0'
 import { Elysia } from 'elysia'
 
 const plugin = (app: Elysia) => app
@@ -337,8 +317,6 @@ const app = new Elysia()
     .get('/counter', ({ store: { counter } }) => counter)
     .listen(3000)
 ```
-
-</CodePlayground>
 
 The callback assigns properties directly to the main instance. `/plugin` returns `Hi`, and `/counter` returns `0`.
 

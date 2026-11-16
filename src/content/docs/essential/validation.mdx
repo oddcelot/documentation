@@ -9,121 +9,6 @@ import { Card } from '../../../components/ui/card';
 import InteractiveDocLayout from '../../../components/interactive-code/layout.astro';
 import InteractiveDoc from '../../../components/interactive-code/doc.astro';
 import InteractiveStep from '../../../components/interactive-code/step.astro';
-import CodePlayground from '../../../components/playground/code.astro';
-
-export const examples = {
-    "body": [
-        {
-            "method": "POST",
-            "displayPath": "/body · {\"name\":\"Elysia\"}",
-            "response": "HTTP 200\n\n{\n  \"name\": \"Elysia\"\n}"
-        },
-        {
-            "method": "POST",
-            "displayPath": "/body · {\"name\":1}",
-            "response": "HTTP 422\n\n{\n  \"type\": \"validation\",\n  \"code\": \"validation\",\n  \"title\": \"Validation Error\",\n  \"status\": 422,\n  \"on\": \"body\",\n  \"property\": \"/name\"\n}"
-        },
-        {
-            "method": "POST",
-            "displayPath": "/body · {\"alias\":\"Elysia\"}",
-            "response": "HTTP 422\n\n{\n  \"type\": \"validation\",\n  \"code\": \"validation\",\n  \"title\": \"Validation Error\",\n  \"status\": 422,\n  \"on\": \"body\",\n  \"property\": \"root\"\n}"
-        }
-    ],
-    "query": [
-        {
-            "method": "GET",
-            "displayPath": "/query?name=Elysia",
-            "response": "HTTP 200\n\n{\n  \"name\": \"Elysia\"\n}"
-        },
-        {
-            "method": "GET",
-            "displayPath": "/query?name=1",
-            "response": "HTTP 200\n\n{\n  \"name\": \"1\"\n}"
-        },
-        {
-            "method": "GET",
-            "displayPath": "/query?alias=Elysia",
-            "response": "HTTP 422\n\n{\n  \"type\": \"validation\",\n  \"code\": \"validation\",\n  \"title\": \"Validation Error\",\n  \"status\": 422,\n  \"on\": \"query\",\n  \"property\": \"root\"\n}"
-        }
-    ],
-    "coercion": [
-        {
-            "method": "GET",
-            "displayPath": "/query?id=1",
-            "response": "HTTP 200\n\n1"
-        },
-        {
-            "method": "GET",
-            "displayPath": "/query?id=salt",
-            "response": "HTTP 422\n\n{\n  \"type\": \"validation\",\n  \"code\": \"validation\",\n  \"title\": \"Validation Error\",\n  \"status\": 422,\n  \"on\": \"query\",\n  \"property\": \"/id\"\n}"
-        }
-    ],
-    "params": [
-        {
-            "method": "GET",
-            "displayPath": "/id/1",
-            "response": "HTTP 200\n\n{\n  \"id\": 1\n}"
-        },
-        {
-            "method": "GET",
-            "displayPath": "/id/a",
-            "response": "HTTP 422\n\n{\n  \"type\": \"validation\",\n  \"code\": \"validation\",\n  \"title\": \"Validation Error\",\n  \"status\": 422,\n  \"on\": \"params\",\n  \"property\": \"/id\"\n}"
-        }
-    ],
-    "headers": [
-        {
-            "method": "GET",
-            "displayPath": "/headers · Authorization: Bearer 12345",
-            "response": "HTTP 200\n\nBearer 12345"
-        },
-        {
-            "method": "GET",
-            "displayPath": "/headers · no Authorization",
-            "response": "HTTP 422\n\n{\n  \"type\": \"validation\",\n  \"code\": \"validation\",\n  \"title\": \"Validation Error\",\n  \"status\": 422,\n  \"on\": \"headers\",\n  \"property\": \"root\"\n}"
-        }
-    ],
-    "responseStatus": [
-        {
-            "method": "GET",
-            "displayPath": "/response",
-            "response": "HTTP 200\n\n{\n  \"name\": \"Jane Doe\"\n}"
-        },
-        {
-            "method": "GET",
-            "displayPath": "/response?fail=true",
-            "response": "HTTP 400\n\n{\n  \"error\": \"Something went wrong\"\n}"
-        }
-    ],
-    "guard": [
-        {
-            "method": "GET",
-            "displayPath": "/none",
-            "response": "HTTP 200\n\nhi"
-        },
-        {
-            "method": "GET",
-            "displayPath": "/query",
-            "response": "HTTP 422\n\n{\n  \"type\": \"validation\",\n  \"code\": \"validation\",\n  \"title\": \"Validation Error\",\n  \"status\": 422,\n  \"on\": \"query\",\n  \"property\": \"root\"\n}"
-        },
-        {
-            "method": "GET",
-            "displayPath": "/query?name=a",
-            "response": "HTTP 200\n\na"
-        }
-    ],
-    "override": [
-        {
-            "method": "POST",
-            "displayPath": "/age · {\"age\":18}",
-            "response": "HTTP 200\n\n{\n  \"age\": 18\n}"
-        },
-        {
-            "method": "POST",
-            "displayPath": "/age · {\"name\":\"Elysia\"}",
-            "response": "HTTP 422\n\n{\n  \"type\": \"validation\",\n  \"code\": \"validation\",\n  \"title\": \"Validation Error\",\n  \"status\": 422,\n  \"on\": \"body\",\n  \"property\": \"root\"\n}"
-        }
-    ]
-};
 
 export const steps = [
     {
@@ -349,9 +234,7 @@ Both schemas must pass for the handler to run. The table describes each check in
 
 An [HTTP Message](https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages) body. It can be JSON, form fields, or a file.
 
-<CodePlayground examples={examples.body}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='POST /body {"name":"Elysia"} => {"name":"Elysia"}; POST /body {"name":1} => {"type":"validation","code":"validation","title":"Validation Error","status":422,"detail":"must be string","on":"body","property":"/name","found":{"name":1},"expected":{"name":""},"errors":[{"keyword":"type","schemaPath":"#/properties/name","instancePath":"/name","params":{"type":"string"},"message":"must be string"}]}; POST /body {"alias":"Elysia"} => {"type":"validation","code":"validation","title":"Validation Error","status":422,"detail":"must have required properties name","on":"body","property":"root","found":{"alias":"Elysia"},"expected":{"name":""},"errors":[{"keyword":"required","schemaPath":"#","instancePath":"","params":{"requiredProperties":["name"]},"message":"must have required properties name"}]}'
 import { Elysia, t } from 'elysia'
 
 new Elysia()
@@ -360,8 +243,6 @@ new Elysia()
     }, ({ body }) => body)
     .listen(3000)
 ```
-
-</CodePlayground>
 
 | JSON body | Validation |
 | --- | --- |
@@ -424,9 +305,7 @@ The registered detector supplies the byte check here too. A validator that only 
 
 Query parameters follow `?` in a URL. Describe them with an object schema:
 
-<CodePlayground examples={examples.query}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET /query?name=Elysia => {"name":"Elysia"}; GET /query?name=1 => {"name":"1"}; GET /query?alias=Elysia => {"type":"validation","code":"validation","title":"Validation Error","status":422,"detail":"must have required properties name","on":"query","property":"root","found":{"alias":"Elysia"},"expected":{"name":""},"errors":[{"keyword":"required","schemaPath":"#","instancePath":"","params":{"requiredProperties":["name"]},"message":"must have required properties name"}]}'
 import { Elysia, t } from 'elysia'
 
 new Elysia()
@@ -435,8 +314,6 @@ new Elysia()
     }, ({ query }) => query)
     .listen(3000)
 ```
-
-</CodePlayground>
 
 | Request | Validation |
 | --- | --- |
@@ -452,9 +329,7 @@ new Elysia()
 
 Elysia converts applicable TypeBox schemas on `query` automatically. For example, `t.Number()` accepts a numeric string and gives the handler a number:
 
-<CodePlayground examples={examples.coercion}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET /query?id=1 => 1; GET /query?id=salt => {"type":"validation","code":"validation","title":"Validation Error","status":422,"detail":"must be number","on":"query","property":"/id","found":{"id":"salt"},"expected":{"id":0},"errors":[{"keyword":"type","schemaPath":"#/properties/id","instancePath":"/id","params":{"type":"number"},"message":"must be number"}]}'
 import { Elysia, t } from 'elysia'
 
 new Elysia()
@@ -463,8 +338,6 @@ new Elysia()
     }, ({ query: { id } }) => id)
     .listen(3000)
 ```
-
-</CodePlayground>
 
 | Request | Result |
 | --- | --- |
@@ -516,18 +389,15 @@ Declare the array schema to retain and validate every repeated value. Without it
 
 Path parameters capture values from a route such as `/id/:id`. Use an object schema to validate the captured fields:
 
-<CodePlayground examples={examples.params}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET /id/1 => {"id":1}; GET /id/a => {"type":"validation","code":"validation","title":"Validation Error","status":422,"detail":"must be number","on":"params","property":"/id","found":{"id":"a"},"expected":{"id":0},"errors":[{"keyword":"type","schemaPath":"#/properties/id","instancePath":"/id","params":{"type":"number"},"message":"must be number"}]}'
 import { Elysia, t } from 'elysia'
 
 new Elysia()
     .get('/id/:id', {
         params: t.Object({ id: t.Number() })
     }, ({ params }) => params)
+    .listen(3000)
 ```
-
-</CodePlayground>
 
 | Request | Result |
 | --- | --- |
@@ -538,18 +408,15 @@ new Elysia()
 
 Use `headers` to require particular incoming headers:
 
-<CodePlayground examples={examples.headers}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET /headers -H "Authorization: Bearer 12345" => Bearer 12345; GET /headers'
 import { Elysia, t } from 'elysia'
 
 new Elysia()
     .get('/headers', {
         headers: t.Object({ authorization: t.String() })
     }, ({ headers }) => headers.authorization)
+    .listen(3000)
 ```
-
-</CodePlayground>
 
 Header schemas allow additional properties by default. Your client can still send headers such as `accept`; the fields you've declared must satisfy their schemas.
 
@@ -586,9 +453,7 @@ TypeScript checks the handler's return type, and Elysia validates the response a
 
 Map status codes to schemas when different outcomes have different response shapes:
 
-<CodePlayground examples={examples.responseStatus}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET /response => {"name":"Jane Doe (ZZZ)"}; GET /response?fail=true => {"error":"Something went wrong"}'
 import { Elysia, t } from 'elysia'
 
 new Elysia()
@@ -603,9 +468,8 @@ new Elysia()
 
         return { name: 'Jane Doe (ZZZ)' }
     })
+    .listen(3000)
 ```
-
-</CodePlayground>
 
 `/response` returns the `200` shape. `/response?fail=true` returns the `400` shape. Use `status()` to preserve the relationship between the status code and its body type.
 
@@ -635,9 +499,7 @@ A schema can supply runtime validation, coercion, TypeScript types, and OpenAPI 
 
 Use `.guard()` to apply a schema to several routes. It affects routes registered after it:
 
-<CodePlayground examples={examples.guard}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET /none => hi; GET /query => {"type":"validation","code":"validation","title":"Validation Error","status":422,"detail":"must have required properties name","on":"query","property":"root","found":{},"expected":{"name":""},"errors":[{"keyword":"required","schemaPath":"#","instancePath":"","params":{"requiredProperties":["name"]},"message":"must have required properties name"}]}; GET /query?name=a => a'
 import { Elysia, t } from 'elysia'
 
 new Elysia()
@@ -648,8 +510,6 @@ new Elysia()
     .get('/query', ({ query: { name } }) => name)
     .listen(3000)
 ```
-
-</CodePlayground>
 
 | Request | Result |
 | --- | --- |
@@ -668,9 +528,7 @@ Guards support two ways to handle overlapping schemas.
 
 The nearer schema replaces the inherited schema for that property. For example, a route's `body` replaces a guard's `body`; it doesn't merge their fields.
 
-<CodePlayground examples={examples.override}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='POST /age {"age":18} => {"age":18}; POST /age {"name":"Elysia"} => {"type":"validation","code":"validation","title":"Validation Error","status":422,"detail":"must have required properties age","on":"body","property":"root","found":{"name":"Elysia"},"expected":{"age":0},"errors":[{"keyword":"required","schemaPath":"#","instancePath":"","params":{"requiredProperties":["age"]},"message":"must have required properties age"}]}'
 import { Elysia, t } from 'elysia'
 
 new Elysia()
@@ -678,9 +536,8 @@ new Elysia()
     .post('/age', {
         body: t.Object({ age: t.Number() })
     }, ({ body }) => body)
+    .listen(3000)
 ```
-
-</CodePlayground>
 
 `{ "age": 18 }` satisfies `/age` without a `name` field.
 

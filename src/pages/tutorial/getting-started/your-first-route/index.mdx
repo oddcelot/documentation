@@ -3,29 +3,9 @@ title: "Your first route"
 description: "There are 3 types of paths in Elysia. static paths, dynamic paths, and wildcards. Learn how to use them to create your first route."
 ---
 
-import { Elysia } from 'elysia';
 import Lesson from '../../../../components/tutorial/lesson.astro';
 import DocLink from '../../../../components/tutorial/doc-link.astro';
-import Playground from '../../../../components/playground/runner.astro';
 import StepsAnswer from '../../../../components/tutorial/steps-answer.astro';
-
-export const demo3 = new Elysia()
-	.get('/id', () => `id: undefined`)
-    .get('/id/:id', ({ params: { id } }) => `id: ${id}`)
-
-export const demo6 = new Elysia()
-    .get('/id/:id', ({ params: { id } }) => id)
-    .get('/id/123', '123')
-    .get('/id/anything', 'anything')
-    .get('/id', ({ status }) => status(404))
-    .get('/id/anything/test', ({ status }) => status(404))
-
-export const demo9 = new Elysia()
-    .get('/id/:id', ({ params: { id } }) => id)
-    .get('/id/123', '123')
-    .get('/id/anything', 'anything')
-    .get('/id', ({ status }) => status(404))
-    .get('/id/:id/:name', ({ params: { id, name } }) => id + '/' + name)
 
 <Lesson title={frontmatter.title} description={frontmatter.description} doc="/essential/route/">
 
@@ -82,7 +62,7 @@ Dynamic paths match some part and capture the value to extract extra information
 
 To define a dynamic path, we can use a colon `:` followed by a name.
 
-```typescript
+```typescript playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET /id/1 => 1; GET /id/123 => 123; GET /id/anything => anything; GET /id => {"type":"not-found","code":"not-found","status":404,"title":"Not Found"}; GET /id/anything/test => {"type":"not-found","code":"not-found","status":404,"title":"Not Found"}'
 import { Elysia } from 'elysia'
 
 export const app = new Elysia()
@@ -93,14 +73,12 @@ if (import.meta.main) app.listen(3000)
 
 Here, a dynamic path is created with `/id/:id`, which tells Elysia to capture the value `:id` segment with value like **/id/1**, **/id/123**, **/id/anything**.
 
-<Playground elysia={demo6} alias={{ '/id/:id': '/id/1' }} mock={{ '/id/:id': { GET: '1' } }} />
-
 See <DocLink href="/essential/route/#dynamic-path">Dynamic path</DocLink>.
 
 ### Optional path parameters
 We can make a path parameter optional by adding a question mark `?` after the parameter name.
 
-```typescript
+```typescript playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET /id => id undefined; GET /id/1 => id 1'
 import { Elysia } from 'elysia'
 
 export const app = new Elysia()
@@ -108,8 +86,6 @@ export const app = new Elysia()
 
 if (import.meta.main) app.listen(3000)
 ```
-
-<Playground elysia={demo3} alias={{ '/id/:id': '/id/1' }} mock={{ '/id/:id': { GET: 'id 1' }, }} />
 
 See <DocLink href="/essential/route/#optional-params">Optional path parameters</DocLink>.
 
@@ -119,7 +95,7 @@ Dynamic paths allow capturing a single segment while wildcards allow capturing t
 
 To define a wildcard, we can use an asterisk `*`.
 
-```typescript
+```typescript playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET /id/1 => 1; GET /id/123 => 123; GET /id/anything => anything; GET /id; GET /id/anything/rest => anything/rest'
 import { Elysia } from 'elysia'
 
 export const app = new Elysia()
@@ -127,8 +103,6 @@ export const app = new Elysia()
 
 if (import.meta.main) app.listen(3000)
 ```
-
-<Playground elysia={demo9} alias={{ '/id/:id': '/id/1', '/id/:id/:name': '/id/anything/rest' }} mock={{ '/id/:id': { GET: '1' }, '/id/:id/:name': { GET: 'anything/rest' } }} />
 
 See <DocLink href="/essential/route/#wildcard">Wildcards</DocLink>.
 

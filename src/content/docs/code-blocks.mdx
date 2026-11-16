@@ -8,14 +8,8 @@ head:
       content: noindex
 ---
 
-import { Elysia } from 'elysia';
-import CodePlayground from '../../components/playground/code.astro';
 import FileCodeBlock from '../../components/interactive-code/file-code-block.astro';
 import TabItem from '../../components/interactive-code/tab-item.astro';
-
-export const userDemo = new Elysia()
-    .get('/', 'Hello Elysia')
-    .get('/user/:id', ({ params: { id } }) => id);
 
 This page is internal, for docs authors. It lists every code-block mode the docs support, each as its Markdown source followed by the rendered result. It isn't in the sidebar, search, or the exported Markdown.
 
@@ -369,7 +363,7 @@ app.get('/', ({ store: { ~~build~~ } }) => build) //! Property 'build' does not 
 
 ## Playgrounds
 
-A fence marked `playground` becomes a runnable embed. Until a reader presses Run it's a static block with a Copy button, and nothing downloads. The page-wide defaults in `src/components/playground/runbun-defaults.astro` (`load=click`, `expand=full`, `features=types`, `layout=stack`) apply unless a fence sets its own.
+A fence marked `playground` becomes a runnable embed. Until a reader presses Run it's a static block with a Copy button, and nothing downloads. The page-wide defaults in `src/components/playground/runbun-defaults.astro` (`load=click`, `expand=full`, `features=types,-run`, `layout=stack`) apply unless a fence sets its own.
 
 ### Basic playground
 
@@ -423,7 +417,7 @@ new Elysia()
 
 ### Preset requests
 
-Requests a reader can try, each in its own preview tab: the runnable replacement for `<CodePlayground>`'s route list. `requests=` takes `;`-separated `METHOD /path` entries, each with an optional body; single quotes keep a JSON body's double quotes. After ` => ` each request carries the response the author expects: before Run the block shows the code and a tab per request with that response (the author's text, not checked against the code), and the live embed only ever gets the requests. Run gives the live tabs: the first request goes when the server starts, each other one the first time its tab opens, and it wins over `path=`. Needs the playground on runbun.dev to have `requests` (not deployed yet). Renderer: runbun playground. Runnable: yes. Copy: yes.
+Requests a reader can try, each in its own preview tab. `requests=` takes `;`-separated `METHOD /path` entries, each with an optional body; single quotes keep a JSON body's double quotes. After ` => ` each request carries the response the author expects: before Run the block shows the code and a tab per request with that response (the author's text, not checked against the code), and the live embed only ever gets the requests. Run gives the live tabs: the first request goes when the server starts, each other one the first time its tab opens, and it wins over `path=`. Renderer: runbun playground. Runnable: yes. Copy: yes.
 
 ````md
 ```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET / => Hello Elysia; GET /user/617 => 617; POST /form {"hello":"Elysia"} => {"hello":"Elysia"}'
@@ -571,50 +565,3 @@ new Elysia({ adapter: node() }).get('/', 'Hello Elysia').listen(3000)
 
 </TabItem>
 </FileCodeBlock>
-
-### CodePlayground
-
-A code block with a mocked request runner under it, driven by a real Elysia instance exported from the page. It needs no network. `mock` gives each route's response per method, and `alias` maps a route with parameters to the path the runner shows. Renderer: docs component, with a runbun static block. Runnable: yes, against the mock. Copy: yes.
-
-````md
-import { Elysia } from 'elysia';
-import CodePlayground from '../../components/playground/code.astro';
-
-export const userDemo = new Elysia()
-    .get('/', 'Hello Elysia')
-    .get('/user/:id', ({ params: { id } }) => id);
-
-<CodePlayground
-    elysia={userDemo}
-    alias={{ '/user/:id': '/user/1' }}
-    mock={{ '/user/:id': { GET: '1' } }}
->
-
-```ts
-import { Elysia } from 'elysia'
-
-new Elysia()
-    .get('/', 'Hello Elysia')
-    .get('/user/:id', ({ params: { id } }) => id)
-    .listen(3000)
-```
-
-</CodePlayground>
-````
-
-<CodePlayground
-    elysia={userDemo}
-    alias={{ '/user/:id': '/user/1' }}
-    mock={{ '/user/:id': { GET: '1' } }}
->
-
-```ts
-import { Elysia } from 'elysia'
-
-new Elysia()
-    .get('/', 'Hello Elysia')
-    .get('/user/:id', ({ params: { id } }) => id)
-    .listen(3000)
-```
-
-</CodePlayground>

@@ -4,22 +4,11 @@ description: Meet Elysia's routing, validation, OpenAPI, and end-to-end TypeScri
 template: splash
 ---
 
-import { Elysia } from 'elysia';
 import { Card, CardTitle } from '../../components/ui/card';
 import '../../styles/routing.css';
 import InteractiveDocLayout from '../../components/interactive-code/layout.astro';
 import InteractiveDoc from '../../components/interactive-code/doc.astro';
 import InteractiveStep from '../../components/interactive-code/step.astro';
-import CodePlayground from '../../components/playground/code.astro';
-
-export const helloDemo = new Elysia()
-    .get('/', 'Hello Elysia')
-    .get('/user/:id', ({ params: { id } }) => id)
-    .post('/form', ({ body }) => body);
-
-export const paramsDemo = new Elysia()
-    .get('/user/:id', ({ params: { id } }) => id)
-    .get('/user/abc', () => 'abc');
 
 export const steps = [
     {
@@ -66,16 +55,7 @@ Elysia is an ergonomic web framework for building backend servers. It's designed
 
 Let's start with a small server.
 
-<CodePlayground
-    elysia={helloDemo}
-    alias={{ '/user/:id': '/user/1' }}
-    mock={{
-        '/user/:id': { GET: '1' },
-        '/form': { POST: JSON.stringify({ hello: 'Elysia' }) },
-    }}
->
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET / => Hello Elysia; GET /user/1 => 1; POST /form {"hello":"Elysia"} => {"hello":"Elysia"}'
 import { Elysia } from 'elysia'
 
 new Elysia()
@@ -84,8 +64,6 @@ new Elysia()
     .post('/form', ({ body }) => body)
     .listen(3000)
 ```
-
-</CodePlayground>
 
 ## Performance
 
@@ -116,13 +94,7 @@ Elysia has also been compared with Go and Rust frameworks in [TechEmpower round 
 
 Elysia is designed to help you write less TypeScript. It infers types from your routes so you can focus on business logic instead of repeating declarations.
 
-<CodePlayground
-    elysia={paramsDemo}
-    alias={{ '/user/:id': '/user/123' }}
-    mock={{ '/user/:id': { GET: '123' } }}
->
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET /user/123 => 123; GET /user/abc => abc'
 import { Elysia } from 'elysia'
 
 new Elysia()
@@ -130,8 +102,6 @@ new Elysia()
     .get('/user/abc', () => 'abc')
     .listen(3000)
 ```
-
-</CodePlayground>
 
 The `:id` segment becomes `params.id` both at runtime and in the handler's types, without a manual declaration. Its type is `string`.
 

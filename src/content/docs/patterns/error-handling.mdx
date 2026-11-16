@@ -6,66 +6,6 @@ template: splash
 
 import '../../../styles/routing.css';
 import InteractiveDocLayout from '../../../components/interactive-code/layout.astro';
-import CodePlayground from '../../../components/playground/code.astro';
-import { Elysia, HTTPError, problem, status } from 'elysia';
-
-export class CustomError extends HTTPError.id('UNIQUE_ID', 400) {}
-
-export class CreditDetail extends HTTPError.id('OUT_OF_CREDIT', 402) {
-    headers = { 'x-billing-required': 'true' }
-    detail = 'Top up to continue'
-}
-
-export class CreditValue extends HTTPError.id('OUT_OF_CREDIT', 402) {
-    value() {
-        return { code: 'OUT_OF_CREDIT', ok: false }
-    }
-}
-
-export class CreditStatus extends HTTPError.id('OUT_OF_CREDIT') {
-    constructor(balance) {
-        super()
-        this.balance = balance
-    }
-
-    value() {
-        if (this.balance > 0)
-            return status(500, {
-                detail: 'Something went wrong on our side',
-                balance: this.balance
-            })
-
-        return status(402, {
-            type: this.type,
-            code: this.code,
-            detail: 'Out of credit',
-            balance: this.balance
-        })
-    }
-}
-
-export const errorResponseDemos = [
-    new Elysia().get('/', () => new CreditDetail()),
-    new Elysia().get('/', () => new CreditValue()),
-    new Elysia()
-        .get('/balance/0', () => new CreditStatus(0))
-        .get('/balance/1', () => new CreditStatus(1)),
-    new Elysia().get('/return', () => new CustomError('Invalid request')),
-    new Elysia().get('/', () => problem(409, { detail: 'Username is taken' }))
-];
-
-export const errorResponseExamples = await Promise.all(errorResponseDemos.map(async (app) =>
-    Promise.all(app.routes.map(async ({ method, path }) => {
-        const response = await app.handle(new Request(`http://elysiajs.com${path}`, { method }))
-        const headers = [...response.headers].map(([name, value]) => `${name}: ${value}`).join('\n')
-
-        return {
-            method,
-            displayPath: path,
-            response: `HTTP ${response.status}\n${headers}\n\n${JSON.stringify(await response.json(), null, 2)}`
-        }
-    }))
-));
 
 <div class="essential-page">
 <InteractiveDocLayout>
@@ -99,16 +39,13 @@ At runtime, a returned `Error` is handled like a thrown one: it goes through you
 
 `problem()` returns an [RFC 9457](https://www.rfc-editor.org/info/rfc9457) problem document with the `application/problem+json` content type. Elysia fills `type` and `title` for you:
 
-<CodePlayground examples={errorResponseExamples[4]}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET / => {"type":"about:blank","detail":"Username is taken","status":409,"title":"Conflict"}'
 import { Elysia, problem } from 'elysia'
 
 new Elysia()
     .get('/', () => problem(409, { detail: 'Username is taken' }))
+    .listen(3000)
 ```
-
-</CodePlayground>
 
 Both `status()` and `problem()` accept a status name in place of the number, such as `problem('Conflict', { detail: 'Username is taken' })`.
 
@@ -219,18 +156,15 @@ You can use `HTTPError.id()` to create a custom error class that Elysia can tran
 
 By default, Elysia returns an RFC 9457 problem document:
 
-<CodePlayground examples={errorResponseExamples[3]}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET /return => {"type":"UNIQUE_ID","code":"UNIQUE_ID","detail":"Invalid request","status":400,"title":"Bad Request"}'
 import { Elysia, HTTPError } from 'elysia'
 
 class CustomError extends HTTPError.id('UNIQUE_ID', 400) {}
 
 new Elysia()
     .get('/return', () => new CustomError('Invalid request'))
+    .listen(3000)
 ```
-
-</CodePlayground>
 
 ### Error response
 
@@ -249,9 +183,7 @@ The status can also be a name, such as `HTTPError.id('OUT_OF_CREDIT', 'Payment R
 
 Use `detail` to set the `detail` of the RFC 9457 problem document. It takes priority over the error message, so the message can stay in your logs:
 
-<CodePlayground examples={errorResponseExamples[0]}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET / => {"type":"OUT_OF_CREDIT","code":"OUT_OF_CREDIT","detail":"Top up to continue","status":402,"title":"Payment Required"}'
 import { Elysia, HTTPError } from 'elysia'
 
 class OutOfCredit extends HTTPError.id('OUT_OF_CREDIT', 402) {
@@ -261,9 +193,8 @@ class OutOfCredit extends HTTPError.id('OUT_OF_CREDIT', 402) {
 
 new Elysia()
     .get('/', () => new OutOfCredit())
+    .listen(3000)
 ```
-
-</CodePlayground>
 
 Use `extension()` to add your own members to the problem document, like the out-of-credit example from RFC 9457:
 
@@ -306,9 +237,7 @@ new Elysia()
 
 Use `value()` when you need to replace the entire response body:
 
-<CodePlayground examples={errorResponseExamples[1]}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET / => {"code":"OUT_OF_CREDIT","ok":false}'
 import { Elysia, HTTPError } from 'elysia'
 
 class OutOfCredit extends HTTPError.id('OUT_OF_CREDIT', 402) {
@@ -319,9 +248,8 @@ class OutOfCredit extends HTTPError.id('OUT_OF_CREDIT', 402) {
 
 new Elysia()
     .get('/', () => new OutOfCredit())
+    .listen(3000)
 ```
-
-</CodePlayground>
 
 For a response that depends on the request, such as its path or headers, map the error with [`.onError(Class, handler)`](#mapping-errors) instead. The handler receives the request's context:
 
@@ -337,11 +265,9 @@ new Elysia()
     .get('/', () => new OutOfCredit())
 ```
 
-Use `problem()` or `status()` to choose a status code from the error's values. Select a balance below to compare the responses:
+Use `problem()` or `status()` to choose a status code from the error's values. Open each balance's tab below to compare the responses:
 
-<CodePlayground examples={errorResponseExamples[2]}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET /balance/0 => {"type":"OUT_OF_CREDIT","code":"OUT_OF_CREDIT","detail":"Out of credit","balance":0}; GET /balance/1 => {"detail":"Something went wrong on our side","balance":1}'
 import { Elysia, HTTPError, status } from 'elysia'
 
 class OutOfCredit extends HTTPError.id('OUT_OF_CREDIT') {
@@ -368,9 +294,8 @@ class OutOfCredit extends HTTPError.id('OUT_OF_CREDIT') {
 new Elysia()
     .get('/balance/0', () => new OutOfCredit(0))
     .get('/balance/1', () => new OutOfCredit(1))
+    .listen(3000)
 ```
-
-</CodePlayground>
 
 Note:
 - Elysia uses `value()` first, then `detail`, then a `detail` from `extension()`, then the error message.

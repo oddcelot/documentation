@@ -4,34 +4,12 @@ description: Build an Elysia router one step at a time.
 template: splash
 ---
 
-import { Elysia } from 'elysia';
 import { Card, CardTitle } from '../../../components/ui/card';
 import { NumberedCards } from '../../../components/ui/numbered-cards';
 import '../../../styles/routing.css';
 import InteractiveDoc from '../../../components/interactive-code/doc.astro';
 import InteractiveStep from '../../../components/interactive-code/step.astro';
-import CodePlayground from '../../../components/playground/code.astro';
 import InteractiveDocLayout from '../../../components/interactive-code/layout.astro';
-
-export const demo1 = new Elysia()
-	.get('/', 'Elysia')
-	.get('/hi', 'Hello!');
-
-export const demo2 = new Elysia()
-    .get('/user/1', 'Hello Elysia')
-    .get('/user/:id', ({ params: { id } }) => id)
-    .get('/user/*', ({ params }) => params['*'])
-
-export const demo3 = new Elysia()
-    .group('/user', (app) =>
-        app
-            .post('/sign-in', 'Sign in')
-            .get('/profile', 'Profile')
-    )
-
-export const demo4 = new Elysia({ prefix: '/user' })
-    .post('/sign-in', 'Sign in')
-    .get('/profile', 'Profile')
 
 export const steps = [
 	{
@@ -94,9 +72,7 @@ new Elysia()
 
 A [REST API](https://en.wikipedia.org/wiki/REST) takes a path and method to decide which handler to run.
 
-<CodePlayground elysia={demo1}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET / => Elysia; GET /hi => Hello!'
 import { Elysia } from 'elysia'
 
 new Elysia()
@@ -104,8 +80,6 @@ new Elysia()
     .get('/hi', 'Hello!')
     .listen(3000)
 ```
-
-</CodePlayground>
 
 > Calling `.listen` will start a web server at port 3000.
 
@@ -198,9 +172,7 @@ Elysia will resolve paths in the following order:
 2. dynamic paths
 3. wildcards
 
-<CodePlayground elysia={demo2}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='GET /user/1 => Hello Elysia; GET /user/2 => 2; GET /user/a/b => a/b'
 import { Elysia } from 'elysia'
 
 new Elysia()
@@ -209,8 +181,6 @@ new Elysia()
     .get('/user/*', ({ params }) => params['*'])
     .listen(3000)
 ```
-
-</CodePlayground>
 
 </section>
 
@@ -324,9 +294,7 @@ new Elysia()
 
 Many paths with the same prefix can be grouped using `.group`:
 
-<CodePlayground elysia={demo3}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='POST /user/sign-in => Sign in; GET /user/profile => Profile'
 import { Elysia } from 'elysia'
 
 new Elysia()
@@ -338,25 +306,20 @@ new Elysia()
     .listen(3000)
 ```
 
-</CodePlayground>
-
 It's similar to writing `/user/sign-in` and `/user/profile` separately.
 
 ### Prefix
 
 If the entire instance has the same prefix, we can define it in the constructor:
 
-<CodePlayground elysia={demo4}>
-
-```ts
+```ts playground mode=preview height=auto label="Elysia playground" deps="elysia@rc" requests='POST /user/sign-in => Sign in; GET /user/profile => Profile'
 import { Elysia } from 'elysia'
 
 new Elysia({ prefix: '/user' })
     .post('/sign-in', 'Sign in')
     .get('/profile', 'Profile')
+    .listen(3000)
 ```
-
-</CodePlayground>
 
 This is different from `.group` because the prefix is applied to all paths in the instance while group applies to the paths in the callback.
 
