@@ -11,7 +11,7 @@
         "@base-ui/react": "^1.8.0",
         "@neoconfetti/react": "^1.0.0",
         "@number-flow/react": "^0.6.2",
-        "@runbun/astro": "^0.4.0",
+        "@runbun/astro": "^0.5.0",
         "@tabler/icons-react": "^3.46.0",
         "@types/react": "^19.2.18",
         "@types/react-dom": "^19.2.7",
@@ -404,7 +404,7 @@
 
     "@rolldown/pluginutils": ["@rolldown/pluginutils@1.0.0-rc.3", "", {}, "sha512-eybk3TjzzzV97Dlj5c+XrBFW57eTNhzod66y9HrBlzJ6NsCrWCp/2kaPS3K9wJmurBC0Tdw4yPjXKZqlznim3Q=="],
 
-    "@runbun/astro": ["@runbun/astro@0.4.0", "", { "dependencies": { "@pierre/highlights": "0.5.1" }, "peerDependencies": { "astro": "^7.0.0" } }, "sha512-XTAH7zPSctxjTAwzs6ybRy7qtZUWwws4NDhB0ipuLg7EKsO3HzTQrvnKFzFCQiGWuBFzKeFV+7LDdo07py21sg=="],
+    "@runbun/astro": ["@runbun/astro@0.5.0", "", { "dependencies": { "@pierre/highlights": "0.5.1" }, "peerDependencies": { "astro": "^7.0.0" } }, "sha512-ppm5nM4R8Q7zg1ODdUB2gaWrH7Nzg8WfHc5N3kvBnuosmx+aLfqTF5HUW9kXKo8QGkfHASlHNl0fv9QuhCce8Q=="],
 
     "@scalar/helpers": ["@scalar/helpers@0.17.0", "", {}, "sha512-/XzBJDB/nr/Nzkx/a8ow0WdWb5LIb6KsWrjv7TsQYolkCxOM6ZT+iEJ635QssQG33wEzAK0os5Xbiub6RUU+Ng=="],
 

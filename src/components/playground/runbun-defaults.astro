@@ -8,7 +8,7 @@ import { config } from 'virtual:@runbun/astro/config'
 	hidden
 	load="click"
 	expand="full"
-	features="types"
+	features="types,-run"
 	layout="stack"
 	family="elysia-light"
 	fonts="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..600;1,400&display=swap"
@@ -22,11 +22,15 @@ import { config } from 'virtual:@runbun/astro/config'
 		const chrome = () => {
 			const style = getComputedStyle(document.documentElement);
 			const token = (name) => style.getPropertyValue(name).trim();
+			// The embed's root font isn't the page's, so a rem there is another size: hand lengths over in px.
+			const px = (name) => `${parseFloat(token(name)) * parseFloat(style.fontSize)}px`;
 
 			return JSON.stringify({
 				base: {
 					'--bg': token('--color-base'),
-					'--canvas': token('--color-surface'),
+					'--canvas': 'transparent',
+					'--pane-border': token('--color-border'),
+					'--gutter': '0px',
 					'--panel': token('--color-surface'),
 					'--fg': token('--color-ink'),
 					'--muted': token('--color-ink-muted'),
@@ -35,7 +39,8 @@ import { config } from 'virtual:@runbun/astro/config'
 					'--error': token('--color-danger-deep'),
 					'--ok': token('--color-success-deep'),
 					'--warn': token('--color-warning-deep'),
-					'--radius': '1rem',
+					// The card's radius (bun-playground in spica-code.css), so the panes at its edge share its corners.
+					'--radius': px('--radius-2xl'),
 					'--tab-track-pad': '6px',
 					'--tab-radius': '9999px',
 					'--tab-hover': 'transparent',
