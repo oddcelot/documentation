@@ -193,15 +193,27 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 		el.addEventListener('bun-playground:change', onChange);
 		document.addEventListener('click', onClick);
 
+		// The starter passes no check (_steps.test.ts), so its tasks are unchecked without a run.
+		const settle = async () => {
+			if (disposed || isUnsupported) return;
+			if (!sameProject(await userFiles(), steps[0].files)) return grade();
+			generation++;
+			tutorialStore.set({ testcasesResult: checks.map(() => false) });
+		};
+		// Reset reloads the embed's page, which says `ready` again with the project it loaded and no `change`.
+		const onReady = () => {
+			generation++;
+			settle().catch(console.error);
+		};
+
 		void (async () => {
 			await customElements.whenDefined('bun-playground');
 			await el.ready;
 			// The embed can report before hydration; the page marks it then (lesson.astro).
 			if (el.hasAttribute('data-unsupported')) onUnsupported();
 			if (disposed || isUnsupported) return;
-			// The starter passes no check (_steps.test.ts), so its tasks stay unchecked without a run.
-			if (sameProject(await userFiles(), steps[0].files)) return;
-			await grade();
+			el.addEventListener('bun-playground:ready', onReady);
+			await settle();
 		})();
 
 		return () => {
@@ -210,6 +222,7 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 			size.disconnect();
 			document.removeEventListener('click', onClick);
 			el.removeEventListener('bun-playground:change', onChange);
+			el.removeEventListener('bun-playground:ready', onReady);
 		};
 	}, [lesson, src, dependencies, steps]);
 
