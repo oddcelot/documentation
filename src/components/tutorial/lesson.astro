@@ -71,6 +71,7 @@ const answerHtml = answerLinks.reduce((html, link) => html.replace(link, ''), an
 		<meta name="twitter:image" content={ogImage} />
 		<meta name="twitter:image:alt" content={fullTitle} />
 		<link rel="icon" href="/favicon.svg" />
+		<link rel="preconnect" href={new URL(config.playgroundUrl).origin} crossorigin />
 		<link
 			rel="stylesheet"
 			href="https://fonts.googleapis.com/css2?family=Alice&family=Nunito:ital,wght@0,400..800;1,400..700&family=JetBrains+Mono:ital,wght@0,400..600;1,400&display=swap"
@@ -180,6 +181,10 @@ const answerHtml = answerLinks.reduce((html, link) => html.replace(link, ''), an
 				class="flex min-h-0 min-w-0 flex-1 flex-col"
 			>
 				<RunbunDefaults />
+				<script is:inline>
+					// Marks an embed that can't run, for the lesson island to read when it hydrates after the event.
+					addEventListener('bun-playground:unsupported', ({ target }) => target.setAttribute('data-unsupported', ''))
+				</script>
 				<script is:inline type="module" src={`${config.playgroundUrl.replace(/\/?$/, '/')}embed.js`}></script>
 				<RunbunLesson client:load lesson={id} src={config.playgroundUrl} dependencies={lessonDependencies(id)} steps={steps} />
 			</div>

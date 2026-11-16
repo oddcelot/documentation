@@ -31,6 +31,43 @@ bun.test(${JSON.stringify(slug)}, async () => {
 })
 `;
 
+const generatedFiles = (dependencies: Record<string, string>, steps: Step[]) => {
+	const generated: Record<string, string> = {
+		'package.json': `${JSON.stringify({ dependencies }, null, 2)}\n`
+	};
+	for (const { slug, source } of steps.flatMap((step) => step.checks)) {
+		generated[`.tutorial/checks/${slug}.ts`] = source;
+		generated[`.tutorial/${slug}.test.ts`] = wrapper(slug);
+	}
+	return generated;
+};
+
+const escape = (value: string) => value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+// The embed reads its files back unescaped.
+const file = (path: string, text: string, owned: boolean) =>
+	`<script type="text/plain" data-file="${escape(path)}"${owned ? ' data-hidden data-generated' : ''}>${text.replace(/<\/(script)/gi, '<\\/$1').replace(/<!--/g, '<\\!--')}</script>`;
+
+// Server-rendered, so embed.js boots it before hydration; React leaves the host's inner HTML alone after that.
+const playground = (lesson: string, src: string, dependencies: Record<string, string>, steps: Step[]) => {
+	const attributes = {
+		src,
+		load: 'eager',
+		mode: 'full',
+		features: 'types,-git,-run,-console',
+		layout: 'stack',
+		expand: 'false',
+		autorun: 'true',
+		persist: `elysia-tutorial:${lesson}`,
+		title: 'Lesson playground'
+	};
+	return `<bun-playground ${Object.entries(attributes)
+		.map(([name, value]) => `${name}="${escape(value)}"`)
+		.join(' ')}>${[
+		...Object.entries(steps[0].files).map(([path, text]) => file(path, text, false)),
+		...Object.entries(generatedFiles(dependencies, steps)).map(([path, text]) => file(path, text, true))
+	].join('')}</bun-playground>`;
+};
+
 export default function RunbunLesson({ lesson, src, dependencies, steps }: { lesson: string; src: string; dependencies: Record<string, string>; steps: Step[] }) {
 	const host = useRef<HTMLDivElement>(null);
 	const [unsupported, setUnsupported] = useState(false);
@@ -40,46 +77,17 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 		confirming?.(ok);
 		setConfirming(null);
 	};
+	// React 19 sets inner HTML again whenever this object isn't the same one, which would replace the running embed.
+	const [html] = useState(() => ({ __html: playground(lesson, src, dependencies, steps) }));
 
 	useEffect(() => {
 		const checks = steps.flatMap((step) => step.checks);
 		const tests = checks.map(({ slug }) => `.tutorial/${slug}.test.ts`);
-		const generated: Record<string, string> = {
-			'package.json': `${JSON.stringify({ dependencies }, null, 2)}\n`
-		};
-		for (const { slug, source } of checks) {
-			generated[`.tutorial/checks/${slug}.ts`] = source;
-			generated[`.tutorial/${slug}.test.ts`] = wrapper(slug);
-		}
+		const generated = generatedFiles(dependencies, steps);
 		tutorialStore.set({ testcasesResult: checks.map(() => false) });
 
-		const el = document.createElement('bun-playground') as Embed;
-		const attributes = {
-			src,
-			load: 'eager',
-			mode: 'full',
-			features: 'types,-git,-run,-console',
-			layout: 'stack',
-			expand: 'false',
-			autorun: 'true',
-			persist: `elysia-tutorial:${lesson}`,
-			title: 'Lesson playground'
-		};
-		for (const [name, value] of Object.entries(attributes)) el.setAttribute(name, value);
-		const file = (path: string, text: string, owned: boolean) => {
-			const script = document.createElement('script');
-			script.type = 'text/plain';
-			script.dataset.file = path;
-			if (owned) script.dataset.hidden = script.dataset.generated = '';
-			script.textContent = text;
-			return script;
-		};
-		el.append(
-			...Object.entries(steps[0].files).map(([path, text]) => file(path, text, false)),
-			...Object.entries(generated).map(([path, text]) => file(path, text, true))
-		);
 		const box = host.current!;
-		box.append(el);
+		const el = box.querySelector('bun-playground') as Embed;
 		// A percentage height resolves against the element's own auto-height dialog.
 		const size = new ResizeObserver(() => el.setAttribute('height', `${box.clientHeight}px`));
 		size.observe(box);
@@ -147,7 +155,8 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 		};
 		// Host and program writes aren't the reader's code.
 		const onChange = (event: Event) => {
-			if (writing || (event as CustomEvent<{ by: string }>).detail.by !== 'reader') return;
+			const { by, path } = (event as CustomEvent<{ by: string; path: string }>).detail;
+			if (writing || by !== 'reader' || bare(path) === 'bun.lock') return;
 			generation++;
 			clearTimeout(timer);
 			timer = setTimeout(grade, 800);
@@ -180,14 +189,17 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 			useSolution(step).catch(console.error);
 		};
 
-		el.addEventListener('bun-playground:unsupported', onUnsupported);
 		el.addEventListener('bun-playground:change', onChange);
 		document.addEventListener('click', onClick);
 
 		void (async () => {
 			await customElements.whenDefined('bun-playground');
 			await el.ready;
+			// The embed can report before hydration; the page marks it then (lesson.astro).
+			if (el.hasAttribute('data-unsupported')) onUnsupported();
 			if (disposed || isUnsupported) return;
+			// The starter passes no check (_steps.test.ts), so its tasks stay unchecked without a run.
+			if (sameProject(await userFiles(), steps[0].files)) return;
 			await grade();
 		})();
 
@@ -196,7 +208,7 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 			clearTimeout(timer);
 			size.disconnect();
 			document.removeEventListener('click', onClick);
-			el.remove();
+			el.removeEventListener('bun-playground:change', onChange);
 		};
 	}, [lesson, src, dependencies, steps]);
 
@@ -207,7 +219,12 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 					This browser can't run the playground. Try a desktop Chrome, Edge or Firefox.
 				</p>
 			)}
-			<div ref={host} className="tutorial-embed min-h-0 flex-1 overflow-hidden rounded-2xl border border-border-strong bg-base" />
+			<div
+				ref={host}
+				className="tutorial-embed min-h-0 flex-1 overflow-hidden rounded-2xl border border-border-strong bg-base"
+				dangerouslySetInnerHTML={html}
+				suppressHydrationWarning
+			/>
 			<AlertDialog.Root open={!!confirming} onOpenChange={(open) => !open && answer(false)}>
 				<AlertDialog.Portal>
 					<AlertDialog.Backdrop className="fixed inset-0 bg-[color-mix(in_oklch,var(--color-night)_20%,transparent)] transition-opacity duration-(--dur-base) ease-out data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 motion-reduce:transition-none" />

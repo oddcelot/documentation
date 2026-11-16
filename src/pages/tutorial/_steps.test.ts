@@ -153,6 +153,12 @@ for (const { id, root, dependencies, steps } of lessons)
 				});
 			}
 
+		// The playground skips grading a starter it has just loaded, so every check must already show unchecked there.
+		test(`${steps[0].slug} passes none of the checks`, async () => {
+			for (const check of steps.flatMap(({ checks }) => checks))
+				expect(await failure(check, steps[0].app).catch(() => 'crashed'), check.slug).not.toBe('passed');
+		});
+
 		for (const [index, step] of steps.entries().drop(1))
 			test(`${step.slug} passes every check introduced up to it`, async () => {
 				for (const check of steps.slice(0, index + 1).flatMap(({ checks }) => checks))
