@@ -58,7 +58,8 @@ const playground = (lesson: string, src: string, dependencies: Record<string, st
 		expand: 'false',
 		autorun: 'true',
 		persist: `elysia-tutorial:${lesson}`,
-		title: 'Lesson playground'
+		title: 'Lesson playground',
+		vars: JSON.stringify({ base: { '--bg': 'var(--panel)' } })
 	};
 	return `<bun-playground ${Object.entries(attributes)
 		.map(([name, value]) => `${name}="${escape(value)}"`)
@@ -221,7 +222,7 @@ export default function RunbunLesson({ lesson, src, dependencies, steps }: { les
 			)}
 			<div
 				ref={host}
-				className="tutorial-embed min-h-0 flex-1 overflow-hidden rounded-2xl border border-border-strong bg-base"
+				className="tutorial-embed min-h-0 flex-1 overflow-hidden rounded-2xl"
 				dangerouslySetInnerHTML={html}
 				suppressHydrationWarning
 			/>

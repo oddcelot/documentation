@@ -160,3 +160,7 @@ body[data-tutorial] [role='tablist']:has(:focus-visible) * {
 	margin: 0;
 	box-shadow: none;
 }
+
+.tutorial-embed > bun-playground[mode]:not([mode='code']) {
+	outline: none;
+}
